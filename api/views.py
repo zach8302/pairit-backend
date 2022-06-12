@@ -296,4 +296,5 @@ class ResetSessionsView(APIView):
         for c in queryset:
             c.is_ready = False
             c.save()
+        return Response({'success':True}, status=status.HTTP_200_OK)
         
