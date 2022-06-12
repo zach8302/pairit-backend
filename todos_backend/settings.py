@@ -33,7 +33,7 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split("
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
-
+# DEVELOPMENT_MODE = True
 
 # Application definition
 
@@ -168,6 +168,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS_ORIGIN_WHITELIST = {
-#     ('http://localhost:3000',)
-# }
+CORS_ORIGIN_WHITELIST = {
+    ('http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app')
+}
