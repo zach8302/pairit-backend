@@ -12,6 +12,7 @@ from .services import generate_parnterships, create_sessions
 from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
+import random
 
 import random
 import string
@@ -92,7 +93,7 @@ class CreateStudentView(APIView):
             elif queryset.exists():
                 return Response({'Bad Request': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                student = Student(username=username, class_id=class_id, personality=personality, first=first)
+                student = Student(username=username, class_id=class_id, personality=personality, first=first, image=random.randrange(21))
                 student.save()
                 return Response(StudentSerializer(student).data, status=status.HTTP_201_CREATED)
 
@@ -278,7 +279,6 @@ class SetReadyView(APIView):
         partnership_id = current.partnership_id
         queryset = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.owner != current.owner]
         current.is_ready = not current.is_ready
-        current.save()
         ready = False
         if current.is_ready and partnership_id and queryset:
             partner = queryset[0]
@@ -286,7 +286,12 @@ class SetReadyView(APIView):
                 ready=True
                 for s in Session.objects.filter(class_id=partnership_id):
                     s.delete()
-                create_sessions(partner.class_id, partnership_id)
+                try:
+                    create_sessions(partner.class_id, partnership_id)
+                except Exception as e:
+                    print(e)
+                    return Response({"ready" : current.is_ready, "active" : current.is_ready and ready})
+        current.save()
         return Response({"ready" : current.is_ready, "active" : current.is_ready and ready})
 
 class ResetSessionsView(APIView):

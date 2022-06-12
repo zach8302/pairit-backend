@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+import random
 
 # Create your models here.
 class Classroom(models.Model):
@@ -16,6 +17,7 @@ class Student(models.Model):
     class_id = models.CharField(max_length=10, unique=False)
     personality = models.IntegerField(unique=False, default=0)
     partnership_id = models.CharField(max_length=10, unique=False, null=True)
+    image = models.IntegerField(default=0)
 
 class Session(models.Model):
     partnership_id = models.CharField(max_length=10, unique=True, null=True)
@@ -23,4 +25,4 @@ class Session(models.Model):
     session_id = models.CharField(max_length=500, default="")
     token = models.CharField(max_length=500, default="")
     active = models.BooleanField(default=False)
-    expires = models.DateTimeField(default=datetime.datetime.now() + datetime.timedelta(minutes=20))
+    expires = models.DateTimeField(default=None)
