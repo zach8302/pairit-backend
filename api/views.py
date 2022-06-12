@@ -38,6 +38,7 @@ def get_current_student(request):
 
 def get_current_classroom(request):
     username = request.user.username
+    print(username)
     queryset = Classroom.objects.filter(owner=username)
     if queryset:
         return queryset[0]
@@ -269,8 +270,11 @@ class SetPartnerView(APIView):
 class SetReadyView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):  
+    def post(self, request, format=None):  
+        print(request.user.username)
         current = get_current_classroom(request)
+        if not current:
+            return Response({"ready" : False, "active" : False})
         partnership_id = current.partnership_id
         queryset = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.owner != current.owner]
         current.is_ready = not current.is_ready
