@@ -229,7 +229,7 @@ class GetPartnerView(APIView):
     def get(self, request, format=None):
         current = get_current_student(request)
         partnership_id = current.partnership_id
-        queryset = [s for s in Student.objects.filter(partnership_id=partnership_id) if s.username != current.username]
+        queryset = [s for s in Student.objects.filter(partnership_id=partnership_id) if s.class_id != current.class_id]
         if partnership_id and queryset:
             partner = queryset[0]
             return Response({'exists':True, 'data':self.serializer_class(partner).data}, status=status.HTTP_200_OK)
