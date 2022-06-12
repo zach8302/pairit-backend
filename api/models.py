@@ -20,7 +20,7 @@ class Student(models.Model):
 class Session(models.Model):
     partnership_id = models.CharField(max_length=10, unique=True, null=True)
     class_id = models.CharField(max_length=10, unique=False, null=True)
-    session_id = models.CharField(max_length=50, default="")
-    token = models.CharField(max_length=50, default="")
+    session_id = models.CharField(max_length=500, default="")
+    token = models.CharField(max_length=500, default="")
     active = models.BooleanField(default=False)
     expires = models.DateTimeField(default=datetime.datetime.now() + datetime.timedelta(minutes=20))
