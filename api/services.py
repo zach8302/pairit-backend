@@ -3,10 +3,11 @@ import random
 import string
 import datetime
 from opentok import OpenTok
-
-
-API_KEY = "47406241"
-SECRET = "d9be7bd185e27c4df1043efa3d8517614e24ca75"
+import os
+#OPENTOK_API_KEY
+#OPENTOK_SECRET
+API_KEY = os.getenv("OPENTOK_API_KEY")
+SECRET = os.getenv("OPENTOK_SECRET")
 opentok = OpenTok(API_KEY, SECRET)
 api_key = API_KEY
 
