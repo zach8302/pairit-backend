@@ -284,4 +284,16 @@ class SetReadyView(APIView):
                     s.delete()
                 create_sessions(partner.class_id, partnership_id)
         return Response({"ready" : current.is_ready, "active" : current.is_ready and ready})
+
+class ResetSessionsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):  
+        queryset = Session.objects.all()
+        for s in queryset:
+            s.delete()
+        queryset = Classroom.objects.all()
+        for c in queryset:
+            c.is_ready = False
+            c.save()
         

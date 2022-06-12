@@ -20,4 +20,5 @@ urlpatterns = [
     path('create-partnership', SetPartnerView.as_view()),
     path('get-partner', GetPartnerView.as_view()),
     path('set-ready', SetReadyView.as_view()),
+    path('reset-sessions', ResetSessionsView.as_view()),
 ]
