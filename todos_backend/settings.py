@@ -62,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app', 'https://talktodos.com/'
+    'http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app', 'https://talktodos.com'
 ]
 
 ROOT_URLCONF = 'todos_backend.urls'
