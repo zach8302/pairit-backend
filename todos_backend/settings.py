@@ -62,7 +62,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app'
+    'http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app', 'https://talktodos.com/'
 ]
 
 ROOT_URLCONF = 'todos_backend.urls'
@@ -169,5 +169,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_WHITELIST = {
-    ('http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app')
+    ('http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app, "https://talktodos.com/')
 }
