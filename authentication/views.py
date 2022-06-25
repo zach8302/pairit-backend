@@ -24,7 +24,10 @@ class SignUpView(APIView):
         password = request.data['password']
         user = User.objects.create_user(username=username, password=password)
         user.first_name = request.data['first_name']
+        if 'email' in request.data:
+            user.email = request.data['email']
         user.save()
+        print(user.email)
         login(request, user)
         return Response({'Success' : "Logged in successfully"}, status=status.HTTP_200_OK)
 

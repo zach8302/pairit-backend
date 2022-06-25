@@ -1,21 +1,22 @@
+from email.policy import HTTP
 from http.client import HTTPResponse
 import json
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from stripe import api_version
 from .serializers import ClassroomSerializer, StudentSerializer, CreateClassroomSerializer, CreateStudentSerializer, SessionSerializer
-from .models import Classroom, Student, Session
+from .models import Classroom, Questions, Student, Session, Questions
 from rest_framework import generics, serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .services import generate_parnterships, create_sessions
+from .services import create_portal, generate_parnterships, create_sessions, create_checkout_session, validate_session, webhook_received
 from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
 import random
-
-import random
 import string
+
 
 def generate_class_id(length):
     id = ''.join(random.choices(string.ascii_uppercase, k=length))
@@ -83,7 +84,7 @@ class CreateStudentView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             username = request.data.get('username')
-            class_id = serializer.data.get('class_id')
+            class_id = serializer.data.get('class_id').upper()
             personality = request.data.get('personality')
             first = request.data.get('first')
             queryset = Student.objects.filter(username=username)
@@ -138,7 +139,8 @@ class CreateClassroomView(APIView):
             name=serializer.data.get('name')
             owner=serializer.data.get('owner')
             first = request.data.get('first')
-            classroom = Classroom(name=name, owner=owner, first=first)
+            email = request.data.get('email')
+            classroom = Classroom(name=name, owner=owner, first=first, email=email)
             classroom.class_id=generate_class_id(6)
             classroom.save()
             return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
@@ -185,7 +187,8 @@ class ClassroomExistsView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, format=None):
         class_id = request.data.get('class_id')
-        queryset = Classroom.objects.filter(class_id=class_id)
+        norm = class_id.upper()
+        queryset = Classroom.objects.filter(class_id=norm)
         return Response({"exists" : (bool(queryset))})
 
 class UserExistsView(APIView): 
@@ -306,4 +309,71 @@ class ResetSessionsView(APIView):
             c.is_ready = False
             c.save()
         return Response({'success':True}, status=status.HTTP_200_OK)
+        
+class SetQuestionsView(APIView):
+    def post(self, request, format=None):
+        queryset = Questions.objects.all()
+        questions = request.data.get("questions")
+        num = len(queryset)
+        questions = Questions(questions=questions, num=num)
+        questions.save()
+        return Response({'success':True}, status=status.HTTP_201_CREATED)
+
+class GetQuestionsView(APIView):
+    def post(self, request, format=None):
+        num = request.data.get("num")
+        queryset = Questions.objects.filter(num=num)
+        if queryset:
+            question = queryset[0]
+            print(question)
+            return Response(question.questions, status=status.HTTP_200_OK)
+        else:
+            return Response({"Status" : "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+class IsSubscribedView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        classroom = get_current_classroom(request)
+        expires = classroom.expires
+        if not expires:
+            return Response({"subscribed" : False}, status=status.HTTP_200_OK)
+        sub = timezone.now() < expires
+        return Response({"subscribed" : sub}, status=status.HTTP_200_OK)
+
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        classroom = get_current_classroom(request)
+        email = classroom.email
+        if not email:
+            #FREAK OUT
+            pass
+        url = create_checkout_session(email)
+        return Response({"url" : url}, status=status.HTTP_200_OK)
+
+class StripeWebhookView(APIView):
+    def post(self, request, format=None):
+        ok = webhook_received(request)
+        return Response({"success" : ok}, status=status.HTTP_200_OK)
+
+class ValidateSessionView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request, format=None):
+        classroom = get_current_classroom(request)
+        email = classroom.email
+        id = request.data.get("session_id")
+        ok = validate_session(id, email)
+        return Response({"success" : ok}, status=status.HTTP_200_OK)
+
+class CreatePortalView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, format=None):
+        classroom = get_current_classroom(request)
+        email = classroom.email
+        if not email:
+            #FREAK OUT
+            pass
+        url = create_portal(email)
+        return Response({"url" : url}, status=status.HTTP_200_OK)
+
         

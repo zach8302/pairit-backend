@@ -8,8 +8,11 @@ class Classroom(models.Model):
     owner = models.CharField(max_length=100, null=False)
     class_id = models.CharField(max_length=10, unique=True)
     name = models.CharField(max_length=100, default="My Classroom", unique=False)
+    email = models.CharField(max_length=100, default="", unique=True, null=False)
     partnership_id = models.CharField(max_length=10, unique=False, null=True)
     is_ready = models.BooleanField(default=False)
+    num_calls = models.IntegerField(default=0)
+    expires = models.DateTimeField(default=None, null=True)
 
 class Student(models.Model):
     first = models.CharField(max_length=100, null=False)
@@ -26,3 +29,7 @@ class Session(models.Model):
     token = models.CharField(max_length=500, default="")
     active = models.BooleanField(default=False)
     expires = models.DateTimeField(default=None)
+
+class Questions(models.Model):
+    questions = models.CharField(max_length=1500, default="")
+    num = models.IntegerField(default=0)

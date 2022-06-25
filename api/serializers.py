@@ -14,7 +14,7 @@ class CreateStudentSerializer(serializers.ModelSerializer):
 class ClassroomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Classroom
-        fields = ('owner' ,'class_id', 'name', 'first', 'partnership_id', 'is_ready')
+        fields = ('owner' ,'class_id', 'name', 'first', 'partnership_id', 'is_ready', 'num_calls', 'email', 'expires')
 
 class CreateClassroomSerializer(serializers.ModelSerializer):
     class Meta:

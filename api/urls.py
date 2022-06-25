@@ -21,4 +21,11 @@ urlpatterns = [
     path('get-partner', GetPartnerView.as_view()),
     path('set-ready', SetReadyView.as_view()),
     path('reset-sessions', ResetSessionsView.as_view()),
+    path('set-questions', SetQuestionsView.as_view()),
+    path('get-questions', GetQuestionsView.as_view()),
+    path('is-subscribed', IsSubscribedView.as_view()),
+    path('checkout', CheckoutView.as_view()),
+    path('stripe-webhooks', StripeWebhookView.as_view()),
+    path('validate-session', ValidateSessionView.as_view()),
+    path('create-portal', CreatePortalView.as_view()),
 ]
