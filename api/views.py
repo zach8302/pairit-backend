@@ -10,24 +10,25 @@ from rest_framework import generics, serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .services import create_portal, generate_parnterships, create_sessions, create_checkout_session, validate_session, webhook_received
+from .services import check_sub, create_portal, generate_parnterships, create_sessions, create_checkout_session, validate_session, webhook_received
 from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
 import random
 import string
 
+choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8', '9']
 
 def generate_class_id(length):
-    id = ''.join(random.choices(string.ascii_uppercase, k=length))
+    id = ''.join(random.choices(choices, k=length))
     while Classroom.objects.filter(class_id=id):
-        id = ''.join(random.choices(string.ascii_uppercase, k=length))
+        id = ''.join(random.choices(choices, k=length))
     return id
 
 def generate_class_partner_id(length):
-    id = ''.join(random.choices(string.ascii_uppercase, k=length))
+    id = ''.join(random.choices(choices, k=length))
     while Classroom.objects.filter(partnership_id=id):
-        id = ''.join(random.choices(string.ascii_uppercase, k=length))
+        id = ''.join(random.choices(choices, k=length))
     return id
 
 def get_current_student(request):
@@ -38,12 +39,27 @@ def get_current_student(request):
     else:
         return None
 
+def get_student_or_classroom(request):
+    student = get_current_student(request)
+    classroom = get_current_classroom(request)
+    if student:
+        return student
+    elif classroom:
+        return classroom
+    else:
+        return None
+
 def get_current_classroom(request):
     username = request.user.username
     print(username)
     queryset = Classroom.objects.filter(owner=username)
+    studentset = Student.objects.filter(username=username)
     if queryset:
         return queryset[0]
+    elif studentset:
+        student = studentset[0]
+        classroom = Classroom.objects.get(class_id=student.class_id)
+        return classroom
     else:
         return None
 
@@ -105,15 +121,13 @@ class GetClassroomView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        username = request.user.username
-        queryset = Classroom.objects.filter(owner=username)
-        if queryset.exists():
-            classroom = queryset[0]
+        classroom = get_current_classroom(request)
+        if classroom:
             sessions = Session.objects.filter(class_id=classroom.partnership_id)
             data = ClassroomSerializer(classroom).data
             expires = None
-            if classroom.is_ready and sessions:
-                if timezone.now() >= sessions[0].expires:
+            if classroom.is_ready:
+                if not sessions or timezone.now() >= sessions[0].expires:
                     partners = [c for c in Classroom.objects.filter(partnership_id=classroom.partnership_id) if c.class_id != classroom.class_id]
                     if partners and partners[0].is_ready:
                         classroom.is_ready = False
@@ -194,10 +208,15 @@ class ClassroomExistsView(APIView):
 class UserExistsView(APIView): 
     permission_classes = [AllowAny]
     def post(self, request, format=None):
-        username = request.data.get('username')
-        student = Student.objects.filter(username=username)
-        teacher = Classroom.objects.filter(owner=username)
-        return Response({"exists" : student.exists() or teacher.exists()})
+        student, teacher, teacher_email = None, None, None
+        if 'username' in request.data:
+            username = request.data.get('username')
+            student = Student.objects.filter(username=username)
+            teacher = Classroom.objects.filter(owner=username)
+        if 'email' in request.data:
+            email = request.data.get('email')
+            teacher_email = Classroom.objects.filter(email=email)
+        return Response({"exists" : bool(student or teacher or teacher_email)})
 
 class IsLoggedInView(APIView):
     permission_classes = [AllowAny]
@@ -289,6 +308,7 @@ class SetReadyView(APIView):
                 ready=True
                 for s in Session.objects.filter(class_id=partnership_id):
                     s.delete()
+                generate_parnterships(current.class_id, partner.class_id)
                 try:
                     create_sessions(partner.class_id, partnership_id)
                 except Exception as e:
@@ -335,10 +355,9 @@ class IsSubscribedView(APIView):
     def get(self, request, format=None):
         classroom = get_current_classroom(request)
         expires = classroom.expires
-        if not expires:
+        if (not expires or not timezone.now() < expires) and not check_sub(classroom.email):
             return Response({"subscribed" : False}, status=status.HTTP_200_OK)
-        sub = timezone.now() < expires
-        return Response({"subscribed" : sub}, status=status.HTTP_200_OK)
+        return Response({"subscribed" : True}, status=status.HTTP_200_OK)
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]

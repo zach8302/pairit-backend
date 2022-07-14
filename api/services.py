@@ -22,14 +22,18 @@ def create_session_data():
     return {'session_id' : session_id, 'token' : token}
 
 def generate_partnership_id(length):
-    id = ''.join(random.choices(string.ascii_uppercase, k=length))
+    choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8', '9']
+    id = ''.join(random.choices(choices, k=length))
     while Student.objects.filter(partnership_id=id).exists():
-        id = ''.join(random.choices(string.ascii_uppercase, k=length))
+        id = ''.join(random.choices(choices, k=length))
     return id
 
 def generate_parnterships(id1, id2,):
     students1 = Student.objects.filter(class_id=id1)
     students2 = Student.objects.filter(class_id=id2)
+    lone = any(not student.partnership_id for student in students1) or any(not student.partnership_id for student in students2)
+    if not lone:
+        return
     classes = [students1, students2]
     classes.sort(key=lambda x: len(x), reverse=True)
     long, short = classes
@@ -49,7 +53,7 @@ def generate_parnterships(id1, id2,):
             continue
         for p in comps:
             if p[0].username in avaiable:
-                id = generate_partnership_id(6)
+                id = generate_partnership_id(8)
                 s1.partnership_id = id
                 p[0].partnership_id = id
                 avaiable.remove(p[0].username)
@@ -155,6 +159,21 @@ def validate_session(id, email):
     session = stripe.checkout.Session.retrieve(id)
     customer = stripe.Customer.retrieve(session.customer)
     return customer.email == email
+
+def check_sub(email):
+    customer = stripe.Customer.search(
+        query=f'email:"{email}"',
+        expand=['data.subscriptions']
+    )
+    if not customer:
+        return False
+    print(dir(customer))
+    subs = customer.data[0].subscriptions.data
+    for sub in subs:
+        if sub.status == "active" or sub.status == "trialing":
+            return True
+    return False
+
 
 def create_portal(email):
     return_url = 'http://localhost:3000'
