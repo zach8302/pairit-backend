@@ -33,6 +33,8 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "api.talktodos.com,127.0.0.1,l
 
 DEVELOPMENT_MODE = os.getenv("DEVELOPMENT_MODE", "False") == "True"
 
+CALL_LENGTH = 15
+
 # DEVELOPMENT_MODE = True
 
 # Application definition

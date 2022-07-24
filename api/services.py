@@ -1,3 +1,4 @@
+from todos_backend.settings import CALL_LENGTH
 from .models import Classroom, Session, Student
 import random
 import string
@@ -79,7 +80,7 @@ def create_sessions(class_id, id):
             data = create_session_data()
             session_id = data['session_id']
             token = data['token']
-            expires=datetime.datetime.now() + datetime.timedelta(minutes=20)
+            expires=datetime.datetime.now() + datetime.timedelta(minutes=CALL_LENGTH)
             session = Session(partnership_id=partner, class_id=id, session_id=session_id, token=token, expires=expires)
             seen.add(partner)
             session.save()

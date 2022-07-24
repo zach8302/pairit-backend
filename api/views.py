@@ -132,6 +132,8 @@ class GetClassroomView(APIView):
                     if partners and partners[0].is_ready:
                         classroom.is_ready = False
                         partners[0].is_ready = False
+                        classroom.num_calls += 1
+                        partners[0].num_calls += 1
                         classroom.save()
                         partners[0].save()
                 else:
