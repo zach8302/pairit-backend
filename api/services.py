@@ -149,8 +149,8 @@ def create_sessions(class_id, id):
 
 def create_checkout_session(email):
     session = stripe.checkout.Session.create(
-        success_url='http://localhost:3000/teacher?session_id={CHECKOUT_SESSION_ID}',
-        cancel_url='http://localhost:3000/teacher?canceled=true',
+        success_url='http://app.talktodos.com/teacher?session_id={CHECKOUT_SESSION_ID}',
+        cancel_url='http://app.talktodos.com/teacher?canceled=true',
         customer_email=email,
         mode='subscription',
         subscription_data= {
