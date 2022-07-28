@@ -1,4 +1,3 @@
-agora-python-sdk==3.1.2.10
 asgiref==3.5.1
 backports.zoneinfo==0.2.1
 certifi==2022.5.18.1
