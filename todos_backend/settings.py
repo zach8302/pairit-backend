@@ -171,5 +171,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_WHITELIST = {
-    ('http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app, "https://talktodos.com/')
+    ('http://localhost:3000', 'https://sea-turtle-app-l8ay3.ondigitalocean.app', 'https://talktodos.com/', 'https://app.talktodos.com/')
 }
