@@ -242,7 +242,7 @@ def check_sub(email):
 
 
 def create_portal(email):
-    return_url = 'http://localhost:3000'
+    return_url = 'https://app.talktodos.com'
     query = stripe.Customer.search(
         query=f"email:'{email}'",
     )
