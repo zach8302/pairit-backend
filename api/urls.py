@@ -23,6 +23,8 @@ urlpatterns = [
     path('reset-sessions', ResetSessionsView.as_view()),
     path('set-questions', SetQuestionsView.as_view()),
     path('get-questions', GetQuestionsView.as_view()),
+    path('create-activity', CreateActivityView.as_view()),
+    path('get-activity', GetActivityView.as_view()),
     path('is-subscribed', IsSubscribedView.as_view()),
     path('checkout', CheckoutView.as_view()),
     path('stripe-webhooks', StripeWebhookView.as_view()),

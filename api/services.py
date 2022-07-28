@@ -3,6 +3,7 @@ from .models import Classroom, Session, Student
 import random
 import string
 import datetime
+import requests
 from dateutil.relativedelta import *
 from opentok import OpenTok
 import os
@@ -10,11 +11,13 @@ import stripe
 import json
 API_KEY = os.getenv("OPENTOK_API_KEY")
 SECRET = os.getenv("OPENTOK_SECRET")
-STRIPE_API_KEY = "sk_test_51LBPqlJCFUCx31oecgwiKdGrGJsQUzSkkyF4VDY6g8ub9kSkboDHMuqNSNSs1ipdj0Y8eGgkp1QebCywP7cGwaHZ00gDAxo4Go"
-STRIPE_WEBHOOK_SECRET = "whsec_2c5895fba2a3034f2c0127df7713a35f3814ccbfbde8b59f15488d2403453534"
+STRIPE_API_KEY = os.getenv("STRIPE_API_KEY")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
+LOOPS_API_KEY = os.getenv("LOOPS_API_KEY")
 opentok = OpenTok(API_KEY, SECRET)
 api_key = API_KEY
 stripe.api_key = STRIPE_API_KEY
+
 
 def create_session_data():
     session = opentok.create_session()
@@ -28,8 +31,8 @@ def generate_partnership_id(length):
     while Student.objects.filter(partnership_id=id).exists():
         id = ''.join(random.choices(choices, k=length))
     return id
-
-def generate_parnterships(id1, id2,):
+    
+def generate_partnerships(id1, id2):
     students1 = Student.objects.filter(class_id=id1)
     students2 = Student.objects.filter(class_id=id2)
     lone = any(not student.partnership_id for student in students1) or any(not student.partnership_id for student in students2)
@@ -38,38 +41,96 @@ def generate_parnterships(id1, id2,):
     classes = [students1, students2]
     classes.sort(key=lambda x: len(x), reverse=True)
     long, short = classes
-    avaiable = {s.username for s in short}
-    
+    comps = find_compatibilities(long, short)
+    old_total = first_choice(long, short, comps)
+    reverse = long[:]
+    reverse.reverse()
+    partner_swaps(reverse, short, comps)
+    new_total = 0
     for s1 in long:
-        comps = [(s2, calculate_compatibility(s1, s2)) for s2 in short]
-        comps.sort(key=lambda x: x[1], reverse=True)
-        if not avaiable:
-            for i in range(len(comps)):
-                id = comps[i][0].partnership_id
-                partners = Student.objects.filter(partnership_id=id)
-                if len(partners) < 3:
-                    s1.partnership_id = id
-                    s1.save()  
-                    break
-            continue
-        for p in comps:
-            if p[0].username in avaiable:
-                id = generate_partnership_id(8)
-                s1.partnership_id = id
-                p[0].partnership_id = id
-                avaiable.remove(p[0].username)
-                s1.save()
-                p[0].save()
-                break
+        partner = [s2 for s2 in short if s2.partnership_id == s1.partnership_id][0]
+        curr = comps[s1.username][partner.username]
+        new_total += curr
+    print(old_total, new_total)
+
+def find_compatibilities(long, short):
+    comps = {}
+    for s1 in long:
+        individual = {}
+        for s2 in short:
+            individual[s2.username] = calculate_compatibility(s1, s2)
+        comps[s1.username] = individual
+    
+    return comps
 
 def calculate_compatibility(student1, student2):
     score1 = student1.personality
     score2 = student2.personality
-    compatibilty = 100
+    compatibilty = 0
     while score1 and score2:
-        compatibilty -= abs(score1 % 10 - score2 % 10)
+        if score1 % 10 == score2 % 10:
+            compatibilty += 1
         score1, score2 = score1 // 10, score2 // 10
     return compatibilty
+
+def first_choice(long, short, comps):
+    available = set([s.username for s in short])
+    old_total = 0
+    for s1 in long:
+        indiv = comps[s1.username]
+        students = short[:]
+        students.sort(key=lambda x: indiv[x.username], reverse=True)
+
+        if not available:
+            for p in students:
+                id = p.partnership_id
+                partners = [s2 for s2 in short if s2.partnership_id == id]
+                if len(partners) < 2:
+                    s1.partnership_id = id
+                    s1.save()
+                    break
+            continue
+        for p in students:
+            if p.username in available: # username
+                old_total += indiv[p.username]
+                id = generate_partnership_id(7)
+                s1.partnership_id = id
+                p.partnership_id = id
+                s1.save()
+                p.save()
+                available.remove(p.username)
+                break
+    return old_total
+
+def partner_swaps(long, short, comps):
+    more = True
+    while more:
+        more = any([find_swap(s, long, short, comps) for s in long])
+
+def find_swap(s1, long, short, comps):
+    partner = [s2 for s2 in short if s2.partnership_id == s1.partnership_id][0]
+    curr = comps[s1.username][partner.username]
+    options = []
+    for other in long:
+        other_partner = [s2 for s2 in short if s2.partnership_id == other.partnership_id][0]
+        other_curr = comps[other.username][other_partner.username]
+        current = curr * other_curr
+        new1 = comps[s1.username][other_partner.username]
+        new2 = comps[other.username][partner.username]
+        new = new1 * new2
+        options.append(new - current)
+    best = max(options)
+    if best > 0:
+        ind = options.index(best)
+        temp = s1.partnership_id
+        other = long[ind]
+        s1.partner = other.partnership_id
+        other.partnership_id = temp
+        s1.save()
+        other.save()
+        return True
+    else:
+        return False
 
 def create_sessions(class_id, id):
     students = Student.objects.filter(class_id=class_id)
@@ -92,8 +153,11 @@ def create_checkout_session(email):
         cancel_url='http://localhost:3000/teacher?canceled=true',
         customer_email=email,
         mode='subscription',
+        subscription_data= {
+            "trial_period_days": 30
+        },
         line_items=[{
-            'price': 'price_1LE0pHJCFUCx31oejbBER6ph',
+            'price': 'price_1LQKNXJCFUCx31oeMfr5Wxp4',
             # For metered billing, do not pass quantity
             'quantity': 1,
             
@@ -187,5 +251,27 @@ def create_portal(email):
         return_url=return_url,
     )
     return session.url
+
+def add_to_mailing_list(email, first):
+    url = "https://app.loops.so/api/v1/contacts/create"
+    body ={
+        "email": email,
+        "firstName": first,
+        "userGroup": "Teachers",
+        "source":"Sign up"
+    }
+    headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
+
+    return(requests.post(url, data=body, headers=headers))
+
+def loops_event(email, event):
+    url = "https://app.loops.so/api/v1/events/send"
+    body = {
+        "email": email,
+        "eventName": event
+    }
+    headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
+
+    return(requests.post(url, data=body, headers=headers))
     
 

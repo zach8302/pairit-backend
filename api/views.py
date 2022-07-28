@@ -1,16 +1,17 @@
 from email.policy import HTTP
 from http.client import HTTPResponse
 import json
+from unicodedata import name
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from stripe import api_version
 from .serializers import ClassroomSerializer, StudentSerializer, CreateClassroomSerializer, CreateStudentSerializer, SessionSerializer
-from .models import Classroom, Questions, Student, Session, Questions
+from .models import Activity, Classroom, Questions, Student, Session, Questions
 from rest_framework import generics, serializers, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from .services import check_sub, create_portal, generate_parnterships, create_sessions, create_checkout_session, validate_session, webhook_received
+from .services import add_to_mailing_list, check_sub, create_portal, generate_partnerships, create_sessions, create_checkout_session, loops_event, validate_session, webhook_received
 from django.contrib.auth.models import User
 from django.utils import timezone
 import datetime
@@ -82,7 +83,6 @@ class SessionView(generics.ListAPIView):
 
 class GetStudentView(APIView):
     serializer_class = StudentSerializer
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         username = request.user.username
@@ -156,6 +156,8 @@ class CreateClassroomView(APIView):
             owner=serializer.data.get('owner')
             first = request.data.get('first')
             email = request.data.get('email')
+            add_to_mailing_list(email, first)
+            loops_event(email, "Sign up")
             classroom = Classroom(name=name, owner=owner, first=first, email=email)
             classroom.class_id=generate_class_id(6)
             classroom.save()
@@ -288,7 +290,7 @@ class SetPartnerView(APIView):
         second.partnership_id = id
         first.save()
         second.save()
-        generate_parnterships(first_id, second_id)
+        generate_partnerships(first_id, second_id)
 
         return Response({'success':True}, status=status.HTTP_200_OK)
 
@@ -310,7 +312,7 @@ class SetReadyView(APIView):
                 ready=True
                 for s in Session.objects.filter(class_id=partnership_id):
                     s.delete()
-                generate_parnterships(current.class_id, partner.class_id)
+                generate_partnerships(current.class_id, partner.class_id)
                 try:
                     create_sessions(partner.class_id, partnership_id)
                 except Exception as e:
@@ -335,9 +337,10 @@ class ResetSessionsView(APIView):
 class SetQuestionsView(APIView):
     def post(self, request, format=None):
         queryset = Questions.objects.all()
+        name = request.data.get("name")
         questions = request.data.get("questions")
         num = len(queryset)
-        questions = Questions(questions=questions, num=num)
+        questions = Questions(questions=questions, num=num, name=name)
         questions.save()
         return Response({'success':True}, status=status.HTTP_201_CREATED)
 
@@ -348,7 +351,27 @@ class GetQuestionsView(APIView):
         if queryset:
             question = queryset[0]
             print(question)
-            return Response(question.questions, status=status.HTTP_200_OK)
+            return Response({"name" : question.name, "questions" : question.questions}, status=status.HTTP_200_OK)
+        else:
+            return Response({"Status" : "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+class CreateActivityView(APIView):
+    def post(self, request, format=None):
+        queryset = Activity.objects.all()
+        name = request.data.get("name")
+        description = request.data.get("description")
+        num = len(queryset)
+        activity = Activity(description=description, num=num, name=name)
+        activity.save()
+        return Response({'success':True}, status=status.HTTP_201_CREATED)
+
+class GetActivityView(APIView):
+    def post(self, request, format=None):
+        num = request.data.get("num")
+        queryset = Activity.objects.filter(num=num)
+        if queryset:
+            activity = queryset[0]
+            return Response({"name" : activity.name, "description" : activity.description}, status=status.HTTP_200_OK)
         else:
             return Response({"Status" : "Not Found"}, status=status.HTTP_404_NOT_FOUND)
 

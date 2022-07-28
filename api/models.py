@@ -31,5 +31,11 @@ class Session(models.Model):
     expires = models.DateTimeField(default=None)
 
 class Questions(models.Model):
+    name = models.CharField(max_length=100, default="")
     questions = models.CharField(max_length=1500, default="")
+    num = models.IntegerField(default=0)
+
+class Activity(models.Model):
+    name = models.CharField(max_length=100, default="")
+    description = models.CharField(max_length=1500, default="")
     num = models.IntegerField(default=0)
