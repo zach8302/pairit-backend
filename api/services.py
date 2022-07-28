@@ -155,6 +155,7 @@ def create_checkout_session(email):
         mode='subscription',
         subscription_data= {
             "trial_period_days": 30
+            "allow_promotion_codes" : True
         },
         line_items=[{
             'price': 'price_1LQKNXJCFUCx31oeMfr5Wxp4',
