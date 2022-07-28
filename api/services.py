@@ -153,7 +153,7 @@ def create_checkout_session(email):
         cancel_url='http://app.talktodos.com/teacher?canceled=true',
         customer_email=email,
         mode='subscription',
-        allow_promotion_codes = True
+        allow_promotion_codes = True,
         subscription_data= {
             "trial_period_days": 30
         },
