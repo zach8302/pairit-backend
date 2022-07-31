@@ -224,7 +224,11 @@ def webhook_received(request):
 def validate_session(id, email):
     session = stripe.checkout.Session.retrieve(id)
     customer = stripe.Customer.retrieve(session.customer)
-    return customer.email == email
+    if customer.email == email:
+        loops_subscribe(email)
+        return True
+    return False
+    
 
 def check_sub(email):
     customer = stripe.Customer.search(
@@ -274,5 +278,23 @@ def loops_event(email, event):
     headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
 
     return(requests.post(url, data=body, headers=headers))
+
+def loops_subscribe(email):
+    url = "https://app.loops.so/api/v1/contacts/update"
+    body = {
+        "email": email,
+        "userGroup": "Subscribers",
+    }
+    headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
+
+    return(requests.post(url, data=body, headers=headers))
     
+def get_reset_email(username):
+    teachers = Classroom.objects.filter(owner=username)
+    if teachers:
+        return teachers[0].email
+    students = Student.objects.filter(username=username)
+    if students:
+        classroom = Classroom.objects.filter(class_id=students[0].class_id)
+        return classroom[0].email
 
