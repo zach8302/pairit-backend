@@ -347,6 +347,7 @@ class SetQuestionsView(APIView):
         num = len(queryset)
         if "num" in request.data:
             num = request.data.get("num")
+        print(name, questions, num, url)
         questions = Questions(questions=questions, num=num, name=name, url=url)
         print(questions.questions, questions.num, questions.name, questions.url)
         questions.save()
