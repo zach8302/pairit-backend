@@ -348,6 +348,7 @@ class SetQuestionsView(APIView):
         if "num" in request.data:
             num = request.data.get("num")
         questions = Questions(questions=questions, num=num, name=name, url=url)
+        print(questions.questions, questions.num, questions.name, questions.url)
         questions.save()
         return Response({'success':True}, status=status.HTTP_201_CREATED)
 
