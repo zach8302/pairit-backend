@@ -23,6 +23,8 @@ urlpatterns = [
     path('reset-sessions', ResetSessionsView.as_view()),
     path('set-questions', SetQuestionsView.as_view()),
     path('get-questions', GetQuestionsView.as_view()),
+    path('delete-questions', DeleteQuestionsView.as_view()),
+    path('questions', QuestionsView.as_view()),
     path('create-activity', CreateActivityView.as_view()),
     path('get-activity', GetActivityView.as_view()),
     path('is-subscribed', IsSubscribedView.as_view()),

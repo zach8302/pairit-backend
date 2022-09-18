@@ -54,6 +54,7 @@ class Session(models.Model):
 class Questions(models.Model):
     name = models.CharField(max_length=100, default="")
     questions = models.CharField(max_length=1500, default="")
+    url = models.CharField(max_length=100, default="")
     num = models.IntegerField(default=0)
 
 class Activity(models.Model):

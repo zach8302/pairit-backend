@@ -5,7 +5,7 @@ from unicodedata import name
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from stripe import api_version
-from .serializers import ClassroomSerializer, StudentSerializer, CreateClassroomSerializer, CreateStudentSerializer, SessionSerializer
+from .serializers import ClassroomSerializer, QuestionsSerializer, StudentSerializer, CreateClassroomSerializer, CreateStudentSerializer, SessionSerializer
 from .models import Activity, Classroom, Questions, Student, Session, Questions
 from rest_framework import generics, serializers, status
 from rest_framework.views import APIView
@@ -80,6 +80,10 @@ class ClassroomView(generics.ListAPIView):
 class SessionView(generics.ListAPIView):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
+
+class QuestionsView(generics.ListAPIView):
+    queryset = Questions.objects.all()
+    serializer_class = QuestionsSerializer
 
 class GetStudentView(APIView):
     serializer_class = StudentSerializer
@@ -339,8 +343,11 @@ class SetQuestionsView(APIView):
         queryset = Questions.objects.all()
         name = request.data.get("name")
         questions = request.data.get("questions")
+        url = request.data.get("url")
         num = len(queryset)
-        questions = Questions(questions=questions, num=num, name=name)
+        if "num" in request.data:
+            num = request.data.get("num")
+        questions = Questions(questions=questions, num=num, name=name, url=url)
         questions.save()
         return Response({'success':True}, status=status.HTTP_201_CREATED)
 
@@ -351,9 +358,16 @@ class GetQuestionsView(APIView):
         if queryset:
             question = queryset[0]
             print(question)
-            return Response({"name" : question.name, "questions" : question.questions}, status=status.HTTP_200_OK)
+            return Response({"name" : question.name, "questions" : question.questions, "url" : question.url}, status=status.HTTP_200_OK)
         else:
             return Response({"Status" : "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+class DeleteQuestionsView(APIView):
+    def post(self, request, format=None):
+        num = request.data.get("num")
+        queryset = Questions.objects.filter(num=num)
+        queryset.delete()
+        return Response({'Status': 'success'}, status=status.HTTP_200_OK)
 
 class CreateActivityView(APIView):
     def post(self, request, format=None):

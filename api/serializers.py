@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Classroom, Student, Session
+from .models import Classroom, Student, Session, Questions
 
 class StudentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,3 +25,8 @@ class SessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Session
         fields = ('partnership_id', 'session_id', 'active', 'expires', 'token')
+
+class QuestionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Questions
+        fields = ("name", "questions", "num", "url")
