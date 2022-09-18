@@ -38,6 +38,7 @@ def generate_partnerships(id1, id2):
     lone = any(not student.partnership_id for student in students1) or any(not student.partnership_id for student in students2)
     if not lone:
         return
+    if (len(students1) > (len(students2) * 2)) or ((len(students1) * 2) < len(students2))
     classes = [students1, students2]
     classes.sort(key=lambda x: len(x), reverse=True)
     long, short = classes
