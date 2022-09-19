@@ -341,6 +341,7 @@ class ResetSessionsView(APIView):
 class SetQuestionsView(APIView):
     def post(self, request, format=None):
         queryset = Questions.objects.all()
+        print(request.data)
         name = request.data.get("name")
         questions = request.data.get("questions")
         url = request.data.get("url")
