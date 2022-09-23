@@ -32,6 +32,7 @@ def generate_partnership_id(length):
         id = ''.join(random.choices(choices, k=length))
     return id
     
+# takes in two class ids and creates partnerships based on student compatibility scores
 def generate_partnerships(id1, id2):
     students1 = Student.objects.filter(class_id=id1)
     students2 = Student.objects.filter(class_id=id2)
@@ -134,6 +135,7 @@ def find_swap(s1, long, short, comps):
     else:
         return False
 
+# generates session keys and associates each one with a partnership
 def create_sessions(class_id, id):
     students = Student.objects.filter(class_id=class_id)
     seen = set()
