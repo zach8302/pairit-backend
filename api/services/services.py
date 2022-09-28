@@ -1,7 +1,6 @@
 from todos_backend.settings import CALL_LENGTH
-from .models import Classroom, Session, Student
+from ..models import Classroom, Session, Student
 import random
-import string
 import datetime
 import requests
 from dateutil.relativedelta import *

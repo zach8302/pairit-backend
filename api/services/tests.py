@@ -1,5 +1,5 @@
 from django.test import TestCase
-from .models import Student
+from ..models import Student
 from .services import generate_partnerships, generate_partnership_id
 import random
 
