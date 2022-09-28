@@ -1,8 +1,13 @@
+from msilib.schema import Class
+from os import stat
+from typing import Optional
+from urllib.request import Request
 from ...serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
 from ...models import Classroom, Student, Session
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from ...services.services import add_to_mailing_list, create_portal, generate_partnerships, create_sessions, loops_event
 from django.utils import timezone
@@ -22,21 +27,21 @@ def generate_class_partner_id(length : int) -> str:
         id = ''.join(random.choices(choices, k=length))
     return id
 
-def get_current_classroom(request):
-    username = request.user.username
-    print(username)
-    queryset = Classroom.objects.filter(owner=username)
-    studentset = Student.objects.filter(username=username)
-    if queryset:
-        return queryset[0]
-    elif studentset:
-        student = studentset[0]
-        classroom = Classroom.objects.get(class_id=student.class_id)
-        return classroom
-    else:
-        return None
+def get_current_classroom(request : Request) -> Optional(Classroom):
+    data = JSONParser().parse(request)
+    username : str = data['user']['username']
+    try:
+        return Classroom.objects.get(owner=username)
+    except Classroom.DoesNotExist:
+        try:
+            students = Student.objects.filter(username=username)
+            if students:
+                student = students[0]
+                return Classroom.objects.get(class_id=student.class_id)
+        except Classroom.DoesNotExist:
+            return None
 
-class ClassroomView(generics.ListAPIView):
+class ListClassroomView(generics.ListAPIView):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
 
@@ -44,29 +49,36 @@ class GetClassroomView(APIView):
     serializer_class = ClassroomSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
+    def get(self, request : Request, format=None):
         classroom = get_current_classroom(request)
-        if classroom:
-            sessions = Session.objects.filter(class_id=classroom.partnership_id)
-            data = ClassroomSerializer(classroom).data
-            expires = None
-            if classroom.is_ready:
-                if not sessions or timezone.now() >= sessions[0].expires:
-                    partners = [c for c in Classroom.objects.filter(partnership_id=classroom.partnership_id) if c.class_id != classroom.class_id]
-                    if partners and partners[0].is_ready:
-                        classroom.is_ready = False
-                        partners[0].is_ready = False
-                        classroom.num_calls += 1
-                        partners[0].num_calls += 1
-                        classroom.save()
-                        partners[0].save()
-                else:
-                    seconds = (sessions[0].expires - timezone.now()).total_seconds()
-                    expires = int(seconds/60) + 1
-            data["expires"] = expires
-            return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response({'Bad Request': 'Class does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+        if classroom is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        class_data = ClassroomSerializer(instance=classroom).data
+        partnership_id = class_data['partnership_id']
+        sessions = Session.objects.filter(class_id=partnership_id)
+        expires = None
+        ready = class_data['is_ready']
+        if ready:
+            if not sessions or timezone.now() >= sessions[0].expires:
+                partners = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.class_id != class_data['class_id']]
+
+                if partners:
+                    partner_data = ClassroomSerializer(instance=partners[0]).data
+                    if partner_data['is_ready']:
+                        ready = False
+                        partner_data['is_ready'] = False
+                        class_data['num_calls'] += 1
+                        partner_data['num_calls'] += 1
+                        ClassroomSerializer(instance=classroom, data=class_data).save()
+                        ClassroomSerializer(instance=partners[0], data=partner_data).save()
+            else:
+                seconds = (sessions[0].expires - timezone.now()).total_seconds()
+                expires = int(seconds/60) + 1
+        class_data['expires'] = expires
+        # originally this save did not exist but I have added it
+        ClassroomSerializer(instance=classroom, data=class_data).save()
+        return Response(class_data, status=status.HTTP_200_OK)
+        
 
 class CreateClassroomView(APIView):
     serializer_class = CreateClassroomSerializer
