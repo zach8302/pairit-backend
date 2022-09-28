@@ -41,6 +41,13 @@ def get_current_classroom(request : Request) -> Optional(Classroom):
         except Classroom.DoesNotExist:
             return None
 
+def get_class_partner(partnership_id : str, class_id : str) -> Optional(Classroom):
+    # class_id is the id of the current class, need to ignore to not return own class as partner
+    partners = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.class_id != class_id]
+    if partners:
+        return partners[0]
+    return None
+
 class ListClassroomView(generics.ListAPIView):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
@@ -53,7 +60,10 @@ class GetClassroomView(APIView):
         classroom = get_current_classroom(request)
         if classroom is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
         class_data = ClassroomSerializer(instance=classroom).data
+
+        class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
         sessions = Session.objects.filter(class_id=partnership_id)
         expires = None
@@ -63,17 +73,20 @@ class GetClassroomView(APIView):
         if ready:
             if not sessions or timezone.now() >= sessions[0].expires:
 
-                partners = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.class_id != class_data['class_id']]
+                partner = get_class_partner(partnership_id=partnership_id, class_id=class_id)
 
-                if partners:
-                    partner_data = ClassroomSerializer(instance=partners[0]).data
-                    if partner_data['is_ready']:
-                        ready = False
-                        partner_data['is_ready'] = False
-                        class_data['num_calls'] += 1
-                        partner_data['num_calls'] += 1
-                        ClassroomSerializer(instance=classroom, data=class_data).save()
-                        ClassroomSerializer(instance=partners[0], data=partner_data).save()
+                if not partner:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                partner_data = ClassroomSerializer(instance=partner).data
+
+                if partner_data['is_ready']:
+                    ready = False
+                    partner_data['is_ready'] = False
+                    class_data['num_calls'] += 1
+                    partner_data['num_calls'] += 1
+                    ClassroomSerializer(instance=classroom, data=class_data).save()
+                    ClassroomSerializer(instance=partner, data=partner_data).save()
             else:
                 seconds = (sessions[0].expires - timezone.now()).total_seconds()
                 expires = int(seconds/60) + 1
@@ -81,6 +94,42 @@ class GetClassroomView(APIView):
         ClassroomSerializer(instance=classroom, data=class_data).save()
         return Response(class_data, status=status.HTTP_200_OK)
         
+class SetReadyView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):  
+        classroom = get_current_classroom(request)
+        if not classroom:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ClassroomSerializer(instance=classroom)
+        class_data = serializer.data
+        class_id = class_data['class_id']
+        partnership_id = class_data['partnership_id']
+        partner = get_class_partner(partnership_id=partnership_id, class_id=class_id)
+
+        class_ready = class_data['is_ready']
+        class_ready = not class_ready
+
+        if not class_ready:
+            return Response(data={"ready" : class_ready}, status=status.HTTP_400_BAD_REQUEST)
+        elif not partnership_id:
+            return Response(data={"partnership_id" : None}, status=status.HTTP_400_BAD_REQUEST)
+        elif not partner:
+            return Response(data={"partner" : None}, status=status.HTTP_400_BAD_REQUEST)
+
+        if partner.is_ready:
+            # Old cleanup, should be moved eventually
+            for s in Session.objects.filter(class_id=partnership_id):
+                s.delete()
+            generate_partnerships(class_id, partner.class_id)
+            try:
+                create_sessions(partner.class_id, partnership_id)
+            except Exception as e:
+                return Response({"ready" : class_ready, "active" : class_ready and partner.is_ready}, 
+                                 status=status.HTTP_417_EXPECTATION_FAILED)
+        serializer.save()
+        return Response({"ready" : class_ready, "active" : class_ready and partner.is_ready})
 
 class CreateClassroomView(APIView):
     serializer_class = CreateClassroomSerializer
@@ -88,71 +137,47 @@ class CreateClassroomView(APIView):
 
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
+        data = serializer.data
 
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-        name : str = serializer.data.get('name')
-        owner : str = serializer.data.get('owner')
-        first : str = request.data.get('first')
-        email : str = request.data.get('email')
+
+        first : str = data['first']
+        email : str = data['email']
 
         add_to_mailing_list(email, first)
         loops_event(email, "Sign Up")
 
-        classroom = Classroom(name=name, owner=owner, first=first, email=email)
-        classroom.class_id = generate_class_id(6)
-        classroom.save()
-        return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
-
-class SetReadyView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, format=None):  
-        print(request.user.username)
-        current = get_current_classroom(request)
-        if not current:
-            return Response({"ready" : False, "active" : False})
-        partnership_id = current.partnership_id
-        queryset = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.owner != current.owner]
-        current.is_ready = not current.is_ready
-        ready = False
-        if current.is_ready and partnership_id and queryset:
-            partner = queryset[0]
-            if partner.is_ready:
-                ready=True
-                for s in Session.objects.filter(class_id=partnership_id):
-                    s.delete()
-                generate_partnerships(current.class_id, partner.class_id)
-                try:
-                    create_sessions(partner.class_id, partnership_id)
-                except Exception as e:
-                    print(e)
-                    return Response({"ready" : current.is_ready, "active" : current.is_ready and ready})
-        current.save()
-        return Response({"ready" : current.is_ready, "active" : current.is_ready and ready})
+        data['class_id'] = generate_class_id(6)
+        serializer.save()
+        return Response(data, status=status.HTTP_201_CREATED)
 
 class CreatePortalView(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
+    def get(self, request : Request, format=None):
         classroom = get_current_classroom(request)
+        if not classroom:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         email = classroom.email
         if not email:
-            #FREAK OUT
-            pass
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
         url = create_portal(email)
-        return Response({"url" : url}, status=status.HTTP_200_OK)
+        return Response(data={"url" : url}, status=status.HTTP_200_OK)
 
 class MyStudentsView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = StudentSerializer
 
-    def get(self, request, format=None):
-        username = request.user.username
-        classroom = Classroom.objects.filter(owner=username)[0]
-        queryset = Student.objects.filter(class_id=classroom.class_id)
-        if queryset:
-            students = [StudentSerializer(student).data for student in queryset]
+    def get(self, request : Request, format=None):
+        data = JSONParser().parse(request)
+        username = data['user']['username']
+        try:
+            classroom = Classroom.objects.get(owner=username)
+            class_id = classroom.class_id
+            queryset = Student.objects.filter(class_id=class_id)
+            students = [StudentSerializer(instance=student).data for student in queryset]
             return Response({'students' : students}, status=status.HTTP_200_OK)
-        else:
-            return Response({'students':[]}, status=status.HTTP_200_OK)
+        except Classroom.DoesNotExist:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
