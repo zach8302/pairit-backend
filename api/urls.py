@@ -18,7 +18,7 @@ urlpatterns = [
     path('is-student', IsStudentView.as_view()),
     
     # class urls
-    path('classes', ClassroomView.as_view()),
+    path('list-classes', ListClassroomView.as_view()),
     path('create-class', CreateClassroomView.as_view()),
     path('get-classroom', GetClassroomView.as_view()),
     path('class-exists', ClassroomExistsView.as_view()),

@@ -11,6 +11,8 @@ from rest_framework.parsers import JSONParser
 # change this all to one view
 # add delete and put activity 
 class ActivityView(APIView):
+    serializer_class = ActivitySerializer
+    
     def post(self, request : Request, format=None) -> Response:
         queryset = Activity.objects.all()
         name : str = request.data.get("name")
@@ -18,10 +20,10 @@ class ActivityView(APIView):
         num : int = len(queryset)
 
         activity = Activity(description=description, num=num, name=name)
-        activity_serializer = ActivitySerializer(instance=activity)
-        if activity_serializer.is_valid():
-            activity_serializer.save()
-            return Response(activity_serializer.data, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(instance=activity)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request : Request, format=None) -> Response:
@@ -29,10 +31,10 @@ class ActivityView(APIView):
         num : int = data['num']
         try:
             activity = Activity.objects.get(num=num)
-            activity_serializer = ActivitySerializer(instance=activity, data=data)
-            if activity_serializer.is_valid():
-                activity_serializer.save()
-                return Response(activity_serializer.data, status=status.HTTP_202_ACCEPTED)
+            serializer = self.serializer_class(instance=activity, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
         except Activity.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
             
@@ -42,8 +44,8 @@ class ActivityView(APIView):
         num : int = data['int']
         try:
             activity = Activity.objects.get(num=num)
-            activity_serializer = ActivitySerializer(activity)
-            return Response(activity_serializer.data, status=status.HTTP_200_OK)
+            serializer = self.serializer_class(instance=activity)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Activity.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
     

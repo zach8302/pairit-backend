@@ -10,14 +10,14 @@ import random
 
 choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8', '9']
 
-def generate_class_id(length):
-    id = ''.join(random.choices(choices, k=length))
+def generate_class_id(length : int) -> str:
+    id : str = ''.join(random.choices(choices, k=length))
     while Classroom.objects.filter(class_id=id):
         id = ''.join(random.choices(choices, k=length))
     return id
 
-def generate_class_partner_id(length):
-    id = ''.join(random.choices(choices, k=length))
+def generate_class_partner_id(length : int) -> str:
+    id : str = ''.join(random.choices(choices, k=length))
     while Classroom.objects.filter(partnership_id=id):
         id = ''.join(random.choices(choices, k=length))
     return id
