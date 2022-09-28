@@ -48,8 +48,7 @@ urlpatterns = [
     path('user-exists', UserExistsView.as_view()),
 
     # activity urls
-    path('create-activity', CreateActivityView.as_view()),
-    path('get-activity', GetActivityView.as_view()),
+    path('activity', ActivityView.as_view()),
 
     # stripe urls
     path('is-subscribed', IsSubscribedView.as_view()),
