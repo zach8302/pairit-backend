@@ -58,8 +58,11 @@ class GetClassroomView(APIView):
         sessions = Session.objects.filter(class_id=partnership_id)
         expires = None
         ready = class_data['is_ready']
+
+        # this is clearnup stuff, maybe move this later
         if ready:
             if not sessions or timezone.now() >= sessions[0].expires:
+
                 partners = [c for c in Classroom.objects.filter(partnership_id=partnership_id) if c.class_id != class_data['class_id']]
 
                 if partners:
@@ -75,7 +78,6 @@ class GetClassroomView(APIView):
                 seconds = (sessions[0].expires - timezone.now()).total_seconds()
                 expires = int(seconds/60) + 1
         class_data['expires'] = expires
-        # originally this save did not exist but I have added it
         ClassroomSerializer(instance=classroom, data=class_data).save()
         return Response(class_data, status=status.HTTP_200_OK)
         
@@ -84,30 +86,24 @@ class CreateClassroomView(APIView):
     serializer_class = CreateClassroomSerializer
     permission_classes = [AllowAny]
 
-
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            name=serializer.data.get('name')
-            owner=serializer.data.get('owner')
-            first = request.data.get('first')
-            email = request.data.get('email')
-            add_to_mailing_list(email, first)
-            loops_event(email, "Sign up")
-            classroom = Classroom(name=name, owner=owner, first=first, email=email)
-            classroom.class_id=generate_class_id(6)
-            classroom.save()
-            return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
 
-        return Response({'Bad Request': 'Invalid data...'}, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        name : str = serializer.data.get('name')
+        owner : str = serializer.data.get('owner')
+        first : str = request.data.get('first')
+        email : str = request.data.get('email')
 
-class ClassroomExistsView(APIView): 
-    permission_classes = [AllowAny]
-    def post(self, request, format=None):
-        class_id = request.data.get('class_id')
-        norm = class_id.upper()
-        queryset = Classroom.objects.filter(class_id=norm)
-        return Response({"exists" : (bool(queryset))})
+        add_to_mailing_list(email, first)
+        loops_event(email, "Sign Up")
+
+        classroom = Classroom(name=name, owner=owner, first=first, email=email)
+        classroom.class_id = generate_class_id(6)
+        classroom.save()
+        return Response(ClassroomSerializer(classroom).data, status=status.HTTP_201_CREATED)
 
 class SetReadyView(APIView):
     permission_classes = [IsAuthenticated]

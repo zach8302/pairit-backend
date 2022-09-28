@@ -8,8 +8,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 
-# change this all to one view
-# add delete and put activity 
 class ActivityView(APIView):
     serializer_class = ActivitySerializer
     
@@ -27,6 +25,7 @@ class ActivityView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request : Request, format=None) -> Response:
+        # request.data.get()
         data = JSONParser().parse(request)
         num : int = data['num']
         try:
