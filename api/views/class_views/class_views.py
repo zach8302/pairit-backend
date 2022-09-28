@@ -181,3 +181,21 @@ class MyStudentsView(APIView):
             return Response({'students' : students}, status=status.HTTP_200_OK)
         except Classroom.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+class GetPartnerClassView(APIView):
+    serializer_class = ClassroomSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request : Request, format=None):
+        current = get_current_classroom(request)
+        if not current:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        class_id = current.class_id
+        partnership_id = current.partnership_id
+        partner = get_class_partner(partnership_id, class_id)
+        if not partnership_id:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        elif not partner:
+            return Response(data={'partner' : None}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data=self.serializer_class(instance=partner).data, status=status.HTTP_200_OK)
