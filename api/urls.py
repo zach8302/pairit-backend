@@ -25,7 +25,6 @@ urlpatterns = [
     path('my-students', MyStudentsView.as_view()),
     path('set-ready', SetReadyView.as_view()),
     path('get-partner-classroom', GetPartnerClassView.as_view()),
-    path('create-portal', CreatePortalView.as_view()),
 
     # question urls
     path('list-questions', ListQuestionsView.as_view()),
@@ -47,4 +46,5 @@ urlpatterns = [
     path('checkout', CheckoutView.as_view()),
     path('stripe-webhooks', StripeWebhookView.as_view()),
     path('validate-session', ValidateSessionView.as_view()),
+    path('create-portal', CreatePortalView.as_view()),
 ]

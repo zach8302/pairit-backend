@@ -3,9 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
+from back.api.services.stripe_services.stripe_services import create_portal
 
 from back.api.views.class_views.class_views import get_current_classroom
-from ...services.services import check_sub, create_checkout_session, webhook_received, validate_session
+from ...services.class_services.class_services import check_sub, create_checkout_session, webhook_received, validate_session
 from django.utils import timezone
 
 class IsSubscribedView(APIView):
@@ -54,3 +55,17 @@ class ValidateSessionView(APIView):
 
         ok = validate_session(id, email)
         return Response({"success" : ok}, status=status.HTTP_200_OK)
+
+class CreatePortalView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request : Request, format=None):
+        classroom = get_current_classroom(request)
+        if not classroom:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        email = classroom.email
+        if not email:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+            
+        url = create_portal(email)
+        return Response(data={"url" : url}, status=status.HTTP_200_OK)

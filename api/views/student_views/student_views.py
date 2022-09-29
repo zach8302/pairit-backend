@@ -1,3 +1,4 @@
+from typing import Optional
 from back.api.views.class_views.class_views import generate_class_partner_id
 from ...services.services import generate_partnerships
 from ...serializers import StudentSerializer, CreateStudentSerializer
@@ -7,14 +8,18 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.parsers import JSONParser
 import random
 
-def get_current_student(request):
-    username = request.user.username
-    queryset = Student.objects.filter(username=username)
-    if queryset:
-        return queryset[0]
-    else:
+def get_current_student(request : Request) -> Optional(Student):
+    request_data = JSONParser().parse(request)
+    if 'user' not in request_data or not 'username' not in request_data['user'] or not request_data['user']['username']:
+        return None
+
+    username = request_data['user']['username']
+    try:
+        return Student.objects.get(username=username)
+    except Student.DoesNotExist:
         return None
 
 class IsStudentView(APIView):

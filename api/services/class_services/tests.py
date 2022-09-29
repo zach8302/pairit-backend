@@ -1,6 +1,6 @@
 from django.test import TestCase
-from ..models import Student
-from .services import generate_partnerships, generate_partnership_id
+from ...models import Student
+from .class_services import generate_partnerships, generate_partnership_id
 import random
 
 def get_pers():

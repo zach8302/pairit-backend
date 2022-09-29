@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from ...services.services import add_to_mailing_list, create_portal, generate_partnerships, create_sessions, loops_event
+from ...services.class_services.class_services import add_to_mailing_list, create_portal, generate_partnerships, create_sessions, loops_event
 from django.utils import timezone
 import random
 
@@ -144,25 +144,11 @@ class CreateClassroomView(APIView):
         email : str = data['email']
 
         add_to_mailing_list(email, first)
-        loops_event(email, "Sign Up")
+        loops_event(email, "Sign up")
 
         data['class_id'] = generate_class_id(6)
         serializer.save()
         return Response(data, status=status.HTTP_201_CREATED)
-
-class CreatePortalView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request : Request, format=None):
-        classroom = get_current_classroom(request)
-        if not classroom:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-
-        email = classroom.email
-        if not email:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-            
-        url = create_portal(email)
-        return Response(data={"url" : url}, status=status.HTTP_200_OK)
 
 class MyStudentsView(APIView):
     permission_classes = [IsAuthenticated]
