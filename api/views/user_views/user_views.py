@@ -9,10 +9,11 @@ from rest_framework.request import Request
 from rest_framework.permissions import AllowAny
 from rest_framework.parsers import JSONParser
 
-class UserExistsView(APIView): 
+
+class UserExistsView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request : Request, format=None) -> Response:
+    def post(self, request: Request) -> Response:
         request_data = JSONParser().parse(request)
         student, teacher, teacher_email = None, None, None
         if 'username' in request_data:
@@ -22,20 +23,23 @@ class UserExistsView(APIView):
         if 'email' in request_data:
             email = request_data['email']
             teacher_email = Classroom.objects.filter(email=email)
-        return Response(data={"exists" : bool(student or teacher or teacher_email)}, status=status.HTTP_200_OK)
+        return Response(data={"exists": bool(student or teacher or teacher_email)}, status=status.HTTP_200_OK)
+
 
 class IsLoggedInView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request : Request, format=None) -> Response:
+    def get(self, request: Request) -> Response:
         request_data = JSONParser().parse(request)
         if 'user' not in request_data or not request_data['user']:
-            return Response({"auth" : False}, status=status.HTTP_200_OK)
+            return Response({"auth": False}, status=status.HTTP_200_OK)
 
         student = get_current_student(request)
         classroom = get_current_classroom(request)
         if student:
-            return Response({'auth':True, 'student':True, 'data':StudentSerializer(student).data}, status=status.HTTP_200_OK)
+            return Response({'auth': True, 'student': True, 'data': StudentSerializer(student).data},
+                            status=status.HTTP_200_OK)
         if classroom:
-            return Response({'auth':True, 'student':False, 'data':ClassroomSerializer(classroom).data}, status=status.HTTP_200_OK)
-        return Response({"auth" : False}, status=status.HTTP_200_OK)
+            return Response({'auth': True, 'student': False, 'data': ClassroomSerializer(classroom).data},
+                            status=status.HTTP_200_OK)
+        return Response({"auth": False}, status=status.HTTP_200_OK)

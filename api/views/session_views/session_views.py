@@ -8,15 +8,17 @@ from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 
+
 class ListSessionView(generics.ListAPIView):
     queryset = Session.objects.all()
     serializer_class = SessionSerializer
+
 
 class SessionView(APIView):
     serializer_class = SessionSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request : Request, format=None):
+    def get(self, request: Request) -> Response:
         current = get_current_student(request)
         if not current:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -34,7 +36,7 @@ class SessionView(APIView):
         except Session.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def delete(self, request : Request, format=None):  
+    def delete(self, request: Request) -> Response:
         queryset = Session.objects.all()
         for s in queryset:
             s.delete()
