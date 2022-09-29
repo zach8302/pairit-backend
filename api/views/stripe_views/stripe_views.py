@@ -31,3 +31,11 @@ class StripeWebhookView(APIView):
     def post(self, request, format=None):
         ok = webhook_received(request)
         return Response({"success" : ok}, status=status.HTTP_200_OK)
+
+class ValidateSessionView(APIView):
+    def post(self, request, format=None):
+        classroom = get_current_classroom(request)
+        email = classroom.email
+        id = request.data.get("session_id")
+        ok = validate_session(id, email)
+        return Response({"success" : ok}, status=status.HTTP_200_OK)

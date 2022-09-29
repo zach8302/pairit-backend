@@ -1,5 +1,3 @@
-from msilib.schema import Class
-from os import stat
 from typing import Optional
 from ...serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
 from ...models import Classroom, Student, Session

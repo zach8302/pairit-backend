@@ -1,10 +1,8 @@
-from email.policy import HTTP
-from urllib.request import Request
-
 from back.api.serializers import ActivitySerializer
 from ...models import Activity
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 
@@ -25,7 +23,6 @@ class ActivityView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request : Request, format=None) -> Response:
-        # request.data.get()
         data = JSONParser().parse(request)
         num : int = data['num']
         try:
