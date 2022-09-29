@@ -27,10 +27,8 @@ urlpatterns = [
     path('get-partner-classroom', GetPartnerClassView.as_view()),
 
     # question urls
+    path('list-questions', ListQuestionsView.as_view()),
     path('questions', QuestionsView.as_view()),
-    path('set-questions', SetQuestionsView.as_view()),
-    path('get-questions', GetQuestionsView.as_view()),
-    path('delete-questions', DeleteQuestionsView.as_view()),
 
     # session urls
     path('sessions', SessionView.as_view()),

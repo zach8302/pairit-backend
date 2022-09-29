@@ -1,11 +1,11 @@
 from msilib.schema import Class
 from os import stat
 from typing import Optional
-from urllib.request import Request
 from ...serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
 from ...models import Classroom, Student, Session
 from rest_framework import generics, status
 from rest_framework.views import APIView
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
