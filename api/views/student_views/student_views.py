@@ -1,11 +1,12 @@
-from urllib.request import Request
-from back.api.views.class_views.class_views import get_current_classroom
+from back.api.views.class_views.class_views import generate_class_partner_id
+from ...services.services import generate_partnerships
 from ...serializers import StudentSerializer, CreateStudentSerializer
 from ...models import Classroom, Student
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.request import Request
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 import random
 
 def get_current_student(request):
@@ -13,16 +14,6 @@ def get_current_student(request):
     queryset = Student.objects.filter(username=username)
     if queryset:
         return queryset[0]
-    else:
-        return None
-
-def get_student_or_classroom(request):
-    student = get_current_student(request)
-    classroom = get_current_classroom(request)
-    if student:
-        return student
-    elif classroom:
-        return classroom
     else:
         return None
 

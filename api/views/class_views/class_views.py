@@ -45,7 +45,7 @@ def get_class_partner(partnership_id : str, class_id : str) -> Optional(Classroo
     if partners:
         return partners[0]
     return None
-
+    
 class ListClassroomView(generics.ListAPIView):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
