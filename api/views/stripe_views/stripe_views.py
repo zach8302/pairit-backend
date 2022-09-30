@@ -3,9 +3,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated
-from back.api.services.stripe_services.stripe_services import create_portal, check_sub, create_checkout_session, \
+from ...services.stripe_services.stripe_services import create_portal, check_sub, create_checkout_session, \
     webhook_received, validate_session
-from back.api.views.class_views.class_views import get_current_classroom
+from ..class_views.class_views import get_current_classroom
 from django.utils import timezone
 
 

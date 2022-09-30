@@ -1,4 +1,4 @@
-from back.api.views.student_views.student_views import get_current_student
+from ..student_views.student_views import get_current_student
 from ...serializers import SessionSerializer
 from ...models import Classroom, Session
 from rest_framework import generics, status

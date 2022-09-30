@@ -1,19 +1,22 @@
 import requests
 from dateutil.relativedelta import *
 import os
+
 LOOPS_API_KEY = os.getenv("LOOPS_API_KEY")
+
 
 def add_to_mailing_list(email, first):
     url = "https://app.loops.so/api/v1/contacts/create"
-    body ={
+    body = {
         "email": email,
         "firstName": first,
         "userGroup": "Teachers",
-        "source":"Sign up"
+        "source": "Sign up"
     }
     headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
 
-    return(requests.post(url, data=body, headers=headers))
+    return requests.post(url, data=body, headers=headers)
+
 
 def loops_event(email, event):
     url = "https://app.loops.so/api/v1/events/send"
@@ -23,7 +26,8 @@ def loops_event(email, event):
     }
     headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
 
-    return(requests.post(url, data=body, headers=headers))
+    return requests.post(url, data=body, headers=headers)
+
 
 def loops_subscribe(email):
     url = "https://app.loops.so/api/v1/contacts/update"
@@ -33,4 +37,4 @@ def loops_subscribe(email):
     }
     headers = {"Authorization": f"Bearer {LOOPS_API_KEY}"}
 
-    return(requests.post(url, data=body, headers=headers))
+    return requests.post(url, data=body, headers=headers)
