@@ -160,7 +160,8 @@ class CreateClassroomView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        serializer = self.serializer_class(data=request.data)
+        request_data = JSONParser().parse(request)
+        serializer = self.serializer_class(data=request_data)
         data = serializer.data
 
         if not serializer.is_valid():
