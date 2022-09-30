@@ -139,6 +139,22 @@ class SetReadyView(APIView):
                         status=status.HTTP_200_OK)
 
 
+class ClassroomExistsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request: Request) -> Response:
+        request_data = JSONParser().parse(request)
+        if 'class_id' not in request_data:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        class_id = request_data['class_id']
+        norm = class_id.upper()
+        try:
+            classroom = Classroom.objects.get(class_id=norm)
+            return Response({"exists": True}, status=status.HTTP_200_OK)
+        except Classroom.DoesNotExist:
+            return Response({"exists": False}, status=status.HTTP_200_OK)
+
+
 class CreateClassroomView(APIView):
     serializer_class = CreateClassroomSerializer
     permission_classes = [AllowAny]

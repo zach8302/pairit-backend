@@ -24,6 +24,7 @@ urlpatterns = [
     path('my-students', MyStudentsView.as_view()),
     path('set-ready', SetReadyView.as_view()),
     path('get-partner-class', GetPartnerClassView.as_view()),
+    path('class-exists', ClassroomExistsView.as_view()),
 
     # question urls
     path('list-questions', ListQuestionsView.as_view()),
