@@ -13,7 +13,7 @@ from rest_framework.parsers import JSONParser
 class UserExistsView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request: Request) -> Response:
+    def get(self, request: Request) -> Response:
         request_data = JSONParser().parse(request)
         student, teacher, teacher_email = None, None, None
         if 'username' in request_data:
