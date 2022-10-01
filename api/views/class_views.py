@@ -83,7 +83,7 @@ class GetClassroomView(APIView):
         if classroom is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        class_data = ClassroomSerializer(instance=classroom).initial_data
+        class_data = ClassroomSerializer(instance=classroom).data
 
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
@@ -100,7 +100,7 @@ class GetClassroomView(APIView):
                 if not partner:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-                partner_data = ClassroomSerializer(instance=partner).initial_data
+                partner_data = ClassroomSerializer(instance=partner).data
 
                 if partner_data['is_ready']:
                     partner_data['is_ready'] = False
@@ -134,7 +134,7 @@ class SetReadyView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = ClassroomSerializer(instance=classroom)
-        class_data = serializer.initial_data
+        class_data = serializer.data
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
         partner = get_class_partner(partnership_id=partnership_id, class_id=class_id)
