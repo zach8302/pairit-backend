@@ -14,14 +14,13 @@ class UserExistsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = request.data
         student, teacher, teacher_email = None, None, None
-        if 'username' in request_data:
-            username = request_data['username']
+        if 'username' in request.data:
+            username = request.data.get('username')
             student = Student.objects.filter(username=username)
             teacher = Classroom.objects.filter(owner=username)
-        if 'email' in request_data:
-            email = request_data['email']
+        if 'email' in request.data:
+            email = request.data.get('email')
             teacher_email = Classroom.objects.filter(email=email)
         return Response(data={"exists": bool(student or teacher or teacher_email)}, status=status.HTTP_200_OK)
 
@@ -30,10 +29,6 @@ class IsLoggedInView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = request.data
-        if 'user' not in request_data or not request_data['user']:
-            return Response({"auth": False}, status=status.HTTP_200_OK)
-
         student = get_current_student(request)
         classroom = get_current_classroom(request)
         if student:

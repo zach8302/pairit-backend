@@ -24,8 +24,7 @@ class ActivityView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request) -> Response:
-        data = request.data
-        num: int = data['num']
+        num: int = request.data.get('num')
         try:
             activity = Activity.objects.get(num=num)
             serializer = self.serializer_class(instance=activity, data=data)
@@ -36,8 +35,7 @@ class ActivityView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request: Request) -> Response:
-        data = request.data
-        num: int = data['num']
+        num: int = request.data.get('num')
         try:
             activity = Activity.objects.get(num=num)
             serializer = self.serializer_class(instance=activity)
@@ -46,8 +44,7 @@ class ActivityView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request: Request) -> Response:
-        data = request.data
-        num: int = data['num']
+        num: int = request.data.get('num')
         try:
             activity = Activity.objects.get(num=num)
             activity.delete()

@@ -14,11 +14,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 
 
 def get_current_student(request: Request) -> Optional[Student]:
-    request_data = request.data
-    if 'user' not in request_data or not 'username' not in request_data['user'] or not request_data['user']['username']:
-        return None
-
-    username = request_data['user']['username']
+    username = request.user.username
     try:
         return Student.objects.get(username=username)
     except Student.DoesNotExist:
@@ -47,14 +43,13 @@ class StudentView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request: Request) -> Response:
-        request_data = request.data
-        serializer = CreateStudentSerializer(data=request_data)
+        serializer = CreateStudentSerializer(data=request.data)
 
         if serializer.is_valid():
-            username = request_data['username']
-            class_id = request_data['class_id'].upper()
-            personality = request_data['personality']
-            first = request_data['first']
+            username = request.data.get('username')
+            class_id = request.data.get('class_id').upper()
+            personality = request.data.get('personality')
+            first = request.data.get('first')
 
             try:
                 classroom = Classroom.objects.get(class_id=class_id)
@@ -76,8 +71,7 @@ class CompleteFormView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        request_data = request.data
-        personality = request_data['personality']
+        personality = request.data.get('personality')
         student = get_current_student(request=request)
         if student:
             serializer = self.serializer_class(instance=student)
@@ -116,10 +110,9 @@ class SetStudentPartnerView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request: Request) -> Response:
-        request_data = request.data
 
-        first_id = request_data['first_id']
-        second_id = request_data['second_id']
+        first_id = request.data.get('first_id')
+        second_id = request.data.get('second_id')
         try:
             first = Classroom.objects.get(class_id=first_id)
             first_serializer = ClassroomSerializer(instance=first)

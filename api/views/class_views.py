@@ -51,8 +51,7 @@ def generate_class_partner_id(length: int) -> str:
 
 
 def get_current_classroom(request: Request) -> Optional[Classroom]:
-    data = request.data
-    username: str = data['user']['username']
+    username: str = request.user.username
     try:
         return Classroom.objects.get(owner=username)
     except Classroom.DoesNotExist:
@@ -160,10 +159,9 @@ class ClassroomExistsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = request.data
-        if 'class_id' not in request_data:
+        if 'class_id' not in request.data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        class_id = request_data['class_id']
+        class_id = request.data.get('class_id')
         norm = class_id.upper()
         try:
             classroom = Classroom.objects.get(class_id=norm)
@@ -177,8 +175,7 @@ class CreateClassroomView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        request_data = request.data
-        serializer = self.serializer_class(data=request_data)
+        serializer = self.serializer_class(data=request.data)
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -198,8 +195,7 @@ class MyStudentsView(APIView):
     serializer_class = StudentSerializer
 
     def get(self, request: Request) -> Response:
-        data = request.data
-        username = data['user']['username']
+        username: str = request.user.username
         try:
             classroom = Classroom.objects.get(owner=username)
             class_id = classroom.class_id
