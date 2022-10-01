@@ -1,5 +1,5 @@
-from models import Activity
-from serializers import ActivitySerializer
+from .models import Activity
+from .serializers import ActivitySerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
