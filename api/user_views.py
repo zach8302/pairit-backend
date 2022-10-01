@@ -1,7 +1,7 @@
-from .class_views import get_current_classroom
-from .student_views import get_current_student
-from ..serializers import ClassroomSerializer, StudentSerializer
-from ..models import Classroom, Student
+from class_views import get_current_classroom
+from student_views import get_current_student
+from serializers import ClassroomSerializer, StudentSerializer
+from models import Classroom, Student
 
 from rest_framework import status
 from rest_framework.views import APIView

@@ -1,11 +1,11 @@
 from typing import Optional
 import random
 
-from ..serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
-from ..models import Classroom, Student, Session
-from ..services.class_services.class_services import generate_partnerships
-from ..services.loops_services.loops_services import add_to_mailing_list, loops_event
-from ..services.session_services.session_services import create_sessions
+from serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
+from models import Classroom, Student, Session
+from services.class_services.class_services import generate_partnerships
+from services.loops_services.loops_services import add_to_mailing_list, loops_event
+from services.session_services.session_services import create_sessions
 
 from rest_framework import generics, status
 from rest_framework.views import APIView

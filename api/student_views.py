@@ -1,10 +1,10 @@
 from typing import Optional
 import random
 
-from .class_views import generate_class_partner_id
-from ..services.class_services.class_services import generate_partnerships
-from ..serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
-from ..models import Classroom, Student
+from class_views import generate_class_partner_id
+from services.class_services.class_services import generate_partnerships
+from serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
+from models import Classroom, Student
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
