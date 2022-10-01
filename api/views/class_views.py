@@ -2,7 +2,7 @@ import datetime
 from typing import Optional
 import random
 
-from ..services.session_services.session_services import create_session_data
+from ..services.session_services.session_services import create_session_data, CALL_LENGTH
 from ..serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
 from ..models import Classroom, Student, Session
 from ..services.class_services.class_services import generate_partnerships
@@ -15,7 +15,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 
-CALL_LENGTH = 15
 choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8',
            '9']
 
