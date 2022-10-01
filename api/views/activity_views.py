@@ -20,7 +20,7 @@ class ActivityView(APIView):
         serializer = self.serializer_class(instance=activity)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request) -> Response:
@@ -41,7 +41,7 @@ class ActivityView(APIView):
         try:
             activity = Activity.objects.get(num=num)
             serializer = self.serializer_class(instance=activity)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
         except Activity.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

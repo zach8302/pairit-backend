@@ -23,7 +23,7 @@ class ClassroomSerializer(serializers.ModelSerializer):
 class CreateClassroomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Classroom
-        fields = ('name', 'owner', 'first')
+        fields = ('name', 'owner', 'first', 'email')
 
 
 class SessionSerializer(serializers.ModelSerializer):

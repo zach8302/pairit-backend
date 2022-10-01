@@ -42,7 +42,7 @@ class StudentView(APIView):
     def get(self, request: Request) -> Response:
         student = get_current_student(request)
         if student:
-            return Response(data=StudentSerializer(instance=student).data, status=status.HTTP_200_OK)
+            return Response(data=StudentSerializer(instance=student).validated_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,7 +64,9 @@ class StudentView(APIView):
                 if queryset.exists():
                     return Response({'Bad Request': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
                 student_serializer = StudentSerializer(instance=student)
-                return Response(student_serializer.data, status=status.HTTP_201_CREATED)
+                if not student_serializer.is_valid():
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(student_serializer.validated_data, status=status.HTTP_201_CREATED)
             except Classroom.DoesNotExist:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -106,7 +108,7 @@ class GetStudentPartnerView(APIView):
         if not queryset:
             return Response({'exists': False, 'data': None}, status=status.HTTP_200_OK)
         partner = queryset[0]
-        return Response({'exists': True, 'data': self.serializer_class(instance=partner).data},
+        return Response({'exists': True, 'data': self.serializer_class(instance=partner).validated_data},
                         status=status.HTTP_200_OK)
 
 

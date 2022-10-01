@@ -85,7 +85,7 @@ class GetClassroomView(APIView):
         if classroom is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        class_data = ClassroomSerializer(instance=classroom).data
+        class_data = ClassroomSerializer(instance=classroom).validated_data
 
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
@@ -127,7 +127,7 @@ class SetReadyView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = ClassroomSerializer(instance=classroom)
-        class_data = serializer.data
+        class_data = serializer.validated_data
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
         partner = get_class_partner(partnership_id=partnership_id, class_id=class_id)
@@ -152,7 +152,6 @@ class SetReadyView(APIView):
             except Exception as e:
                 return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                                 status=status.HTTP_417_EXPECTATION_FAILED)
-        serializer.save()
         return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                         status=status.HTTP_200_OK)
 
@@ -180,20 +179,18 @@ class CreateClassroomView(APIView):
     def post(self, request: Request) -> Response:
         request_data = request.data
         serializer = self.serializer_class(data=request_data)
-        data = serializer.data
-
         if not serializer.is_valid():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        first: str = data['first']
-        email: str = data['email']
+        first: str = serializer.validated_data['first']
+        email: str = serializer.validated_data['email']
 
         add_to_mailing_list(email, first)
         loops_event(email, "Sign up")
 
-        data['class_id'] = generate_class_id(6)
+        serializer.validated_data['class_id'] = generate_class_id(6)
         serializer.save()
-        return Response(data, status=status.HTTP_201_CREATED)
+        return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
 
 class MyStudentsView(APIView):
@@ -207,7 +204,7 @@ class MyStudentsView(APIView):
             classroom = Classroom.objects.get(owner=username)
             class_id = classroom.class_id
             queryset = Student.objects.filter(class_id=class_id)
-            students = [StudentSerializer(instance=student).data for student in queryset]
+            students = [StudentSerializer(instance=student).validated_data for student in queryset]
             return Response({'students': students}, status=status.HTTP_200_OK)
         except Classroom.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)

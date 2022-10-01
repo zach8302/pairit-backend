@@ -31,9 +31,10 @@ class SessionView(APIView):
         try:
             session = Session.objects.filter(partnership_id=partnership_id)
             serializer = self.serializer_class(instance=session)
-            serializer_data = serializer.data
-            if serializer.is_valid() and timezone.now() < session.expires:
-                return Response(data=serializer_data, status=status.HTTP_200_OK)
+            if not serializer.is_valid():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if timezone.now() < session.expires:
+                return Response(data=serializer.validated_data, status=status.HTTP_200_OK)
         except Session.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
