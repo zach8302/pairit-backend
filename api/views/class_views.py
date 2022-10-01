@@ -1,6 +1,12 @@
 from typing import Optional
-from ...serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
-from ...models import Classroom, Student, Session
+import random
+
+from ..serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
+from ..models import Classroom, Student, Session
+from ..services.class_services.class_services import generate_partnerships
+from ..services.loops_services.loops_services import add_to_mailing_list, loops_event
+from ..services.session_services.session_services import create_sessions
+
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.request import Request
@@ -8,11 +14,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
-import random
 
-from ...services.class_services.class_services import generate_partnerships
-from ...services.loops_services.loops_services import add_to_mailing_list, loops_event
-from ...services.session_services.session_services import create_sessions
 
 choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8',
            '9']

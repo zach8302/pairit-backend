@@ -1,5 +1,6 @@
-from ...serializers import QuestionsSerializer
-from ...models import Questions
+from ..serializers import QuestionsSerializer
+from ..models import Questions
+
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.request import Request

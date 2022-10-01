@@ -1,15 +1,17 @@
 from typing import Optional
-from ..class_views.class_views import generate_class_partner_id
-from ...services.class_services.class_services import generate_partnerships
-from ...serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
-from ...models import Classroom, Student
+import random
+
+from .class_views import generate_class_partner_id
+from ..services.class_services.class_services import generate_partnerships
+from ..serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
+from ..models import Classroom, Student
+
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.parsers import JSONParser
-import random
 
 
 def get_current_student(request: Request) -> Optional[Student]:
