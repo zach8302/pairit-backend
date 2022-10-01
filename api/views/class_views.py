@@ -230,4 +230,4 @@ class GetPartnerClassView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         elif not partner:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(data=self.serializer_class(instance=partner).initial_data, status=status.HTTP_200_OK)
+        return Response(data=self.serializer_class(instance=partner).data, status=status.HTTP_200_OK)
