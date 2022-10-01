@@ -2,20 +2,19 @@ from typing import Optional
 import random
 
 from .class_views import generate_class_partner_id
-from .services.class_services.class_services import generate_partnerships
-from .serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
-from .models import Classroom, Student
+from ..services.class_services.class_services import generate_partnerships
+from ..serializers import StudentSerializer, CreateStudentSerializer, ClassroomSerializer
+from ..models import Classroom, Student
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
-from rest_framework.parsers import JSONParser
 
 
 def get_current_student(request: Request) -> Optional[Student]:
-    request_data = JSONParser().parse(request)
+    request_data = request.data
     if 'user' not in request_data or not 'username' not in request_data['user'] or not request_data['user']['username']:
         return None
 
@@ -48,7 +47,7 @@ class StudentView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def post(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         serializer = CreateStudentSerializer(data=request_data)
 
         if serializer.is_valid():
@@ -75,7 +74,7 @@ class CompleteFormView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         personality = request_data['personality']
         student = get_current_student(request=request)
         if student:
@@ -115,7 +114,7 @@ class SetStudentPartnerView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
 
         first_id = request_data['first_id']
         second_id = request_data['second_id']

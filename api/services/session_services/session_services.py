@@ -1,5 +1,3 @@
-from ...models import Session, Student
-import datetime
 import os
 from opentok import OpenTok
 
@@ -16,19 +14,3 @@ def create_session_data():
     session_id = session.session_id
     token = opentok.generate_token(session_id)
     return {'session_id': session_id, 'token': token}
-
-
-# generates session keys and associates each one with a partnership
-def create_sessions(class_id, id):
-    students = Student.objects.filter(class_id=class_id)
-    seen = set()
-    for s in students:
-        partner = s.partnership_id
-        if not partner in seen:
-            data = create_session_data()
-            session_id = data['session_id']
-            token = data['token']
-            expires = datetime.datetime.now() + datetime.timedelta(minutes=CALL_LENGTH)
-            session = Session(partnership_id=partner, class_id=id, session_id=session_id, token=token, expires=expires)
-            seen.add(partner)
-            session.save()

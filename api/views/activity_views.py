@@ -1,11 +1,10 @@
-from .models import Activity
-from .serializers import ActivitySerializer
+from ..models import Activity
+from ..serializers import ActivitySerializer
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 
 
 class ActivityView(APIView):
@@ -25,7 +24,7 @@ class ActivityView(APIView):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             activity = Activity.objects.get(num=num)
@@ -37,7 +36,7 @@ class ActivityView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             activity = Activity.objects.get(num=num)
@@ -47,7 +46,7 @@ class ActivityView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             activity = Activity.objects.get(num=num)

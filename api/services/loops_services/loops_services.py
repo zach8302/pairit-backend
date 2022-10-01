@@ -1,5 +1,4 @@
 import requests
-from dateutil.relativedelta import *
 import os
 
 LOOPS_API_KEY = os.getenv("LOOPS_API_KEY")

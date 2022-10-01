@@ -1,23 +1,39 @@
+import datetime
 from typing import Optional
 import random
 
-from .serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
-from .models import Classroom, Student, Session
-from .services.class_services.class_services import generate_partnerships
-from .services.loops_services.loops_services import add_to_mailing_list, loops_event
-from .services.session_services.session_services import create_sessions
+from ..services.session_services.session_services import create_session_data
+from ..serializers import ClassroomSerializer, CreateClassroomSerializer, StudentSerializer
+from ..models import Classroom, Student, Session
+from ..services.class_services.class_services import generate_partnerships
+from ..services.loops_services.loops_services import add_to_mailing_list, loops_event
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 
-
+CALL_LENGTH = 15
 choices = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'M', 'P', 'Q', 'R', 'T', 'V', 'W', 'X', 'Y', '2', '3', '4', '6', '7', '8',
            '9']
+
+
+# generates session keys and associates each one with a partnership
+def create_sessions(class_id, id):
+    students = Student.objects.filter(class_id=class_id)
+    seen = set()
+    for s in students:
+        partner = s.partnership_id
+        if partner not in seen:
+            data = create_session_data()
+            session_id = data['session_id']
+            token = data['token']
+            expires = datetime.datetime.now() + datetime.timedelta(minutes=CALL_LENGTH)
+            session = Session(partnership_id=partner, class_id=id, session_id=session_id, token=token, expires=expires)
+            seen.add(partner)
+            session.save()
 
 
 def generate_class_id(length: int) -> str:
@@ -35,7 +51,7 @@ def generate_class_partner_id(length: int) -> str:
 
 
 def get_current_classroom(request: Request) -> Optional[Classroom]:
-    data = JSONParser().parse(request)
+    data = request.data
     username: str = data['user']['username']
     try:
         return Classroom.objects.get(owner=username)
@@ -145,7 +161,7 @@ class ClassroomExistsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         if 'class_id' not in request_data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         class_id = request_data['class_id']
@@ -162,7 +178,7 @@ class CreateClassroomView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         serializer = self.serializer_class(data=request_data)
         data = serializer.data
 
@@ -185,7 +201,7 @@ class MyStudentsView(APIView):
     serializer_class = StudentSerializer
 
     def get(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         username = data['user']['username']
         try:
             classroom = Classroom.objects.get(owner=username)

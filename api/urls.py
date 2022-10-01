@@ -1,12 +1,12 @@
 from django.urls import path
 
-from .student_views import *
-from .class_views import *
-from .question_views import *
-from .session_views import *
-from .user_views import *
-from .activity_views import *
-from .stripe_views import *
+from back.api.views.student_views import *
+from back.api.views.class_views import *
+from back.api.views.question_views import *
+from back.api.views.session_views import *
+from back.api.views.user_views import *
+from back.api.views.activity_views import *
+from back.api.views.stripe_views import *
 
 urlpatterns = [
     # student urls

@@ -1,21 +1,20 @@
 from .class_views import get_current_classroom
 from .student_views import get_current_student
-from .serializers import ClassroomSerializer, StudentSerializer
-from .models import Classroom, Student
+from ..serializers import ClassroomSerializer, StudentSerializer
+from ..models import Classroom, Student
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.permissions import AllowAny
-from rest_framework.parsers import JSONParser
 
 
 class UserExistsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         student, teacher, teacher_email = None, None, None
         if 'username' in request_data:
             username = request_data['username']
@@ -31,7 +30,7 @@ class IsLoggedInView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request: Request) -> Response:
-        request_data = JSONParser().parse(request)
+        request_data = request.data
         if 'user' not in request_data or not request_data['user']:
             return Response({"auth": False}, status=status.HTTP_200_OK)
 

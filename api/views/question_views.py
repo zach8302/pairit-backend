@@ -1,11 +1,10 @@
-from .serializers import QuestionsSerializer
-from .models import Questions
+from ..serializers import QuestionsSerializer
+from ..models import Questions
 
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
 
 
 class ListQuestionsView(generics.ListAPIView):
@@ -18,7 +17,7 @@ class QuestionsView(APIView):
 
     def post(self, request: Request) -> Response:
         queryset = Questions.objects.all()
-        request_data = JSONParser().parse(request)
+        request_data = request.data
 
         name: str = request_data["name"]
         questions_param: str = request_data["questions"]
@@ -35,7 +34,7 @@ class QuestionsView(APIView):
         return Response(data=serializer.data, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             questions = Questions.objects.get(num=num)
@@ -47,7 +46,7 @@ class QuestionsView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             questions = Questions.objects.get(num=num)
@@ -57,7 +56,7 @@ class QuestionsView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     def get(self, request: Request) -> Response:
-        data = JSONParser().parse(request)
+        data = request.data
         num: int = data['num']
         try:
             questions = Questions.objects.get(num=num)
