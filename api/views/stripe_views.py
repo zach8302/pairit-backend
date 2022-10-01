@@ -1,4 +1,4 @@
-from back.api.services.stripe_services.stripe_services import check_sub, create_checkout_session, webhook_received, \
+from ..services.stripe_services.stripe_services import check_sub, create_checkout_session, webhook_received, \
     validate_session, create_portal
 from .class_views import get_current_classroom
 
