@@ -194,10 +194,7 @@ class CreateClassroomView(APIView):
         add_to_mailing_list(email, first)
         loops_event(email, "Sign up")
 
-        serializer.data['class_id'] = generate_class_id(6)
-        if not serializer.is_valid():
-            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
+        serializer.save(class_id=generate_class_id(6))
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
 
@@ -211,7 +208,7 @@ class MyStudentsView(APIView):
             classroom = Classroom.objects.get(owner=username)
             class_id = classroom.class_id
             queryset = Student.objects.filter(class_id=class_id)
-            students = [StudentSerializer(instance=student).initial_data for student in queryset]
+            students = [StudentSerializer(instance=student).data for student in queryset]
             return Response({'students': students}, status=status.HTTP_200_OK)
         except Classroom.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
