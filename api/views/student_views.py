@@ -38,7 +38,7 @@ class StudentView(APIView):
     def get(self, request: Request) -> Response:
         student = get_current_student(request)
         if student:
-            return Response(data=StudentSerializer(instance=student).validated_data, status=status.HTTP_200_OK)
+            return Response(data=StudentSerializer(instance=student).initial_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,7 +78,7 @@ class CompleteFormView(APIView):
             serializer.data['personality'] = personality
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(serializer.validated_data, status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -102,7 +102,7 @@ class GetStudentPartnerView(APIView):
         if not queryset:
             return Response({'exists': False, 'data': None}, status=status.HTTP_200_OK)
         partner = queryset[0]
-        return Response({'exists': True, 'data': self.serializer_class(instance=partner).validated_data},
+        return Response({'exists': True, 'data': self.serializer_class(instance=partner).initial_data},
                         status=status.HTTP_200_OK)
 
 

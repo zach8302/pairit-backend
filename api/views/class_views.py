@@ -84,7 +84,7 @@ class GetClassroomView(APIView):
         if classroom is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        class_data = ClassroomSerializer(instance=classroom).validated_data
+        class_data = ClassroomSerializer(instance=classroom).initial_data
 
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
@@ -101,19 +101,28 @@ class GetClassroomView(APIView):
                 if not partner:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-                partner_data = ClassroomSerializer(instance=partner).data
+                partner_data = ClassroomSerializer(instance=partner).initial_data
 
                 if partner_data['is_ready']:
                     partner_data['is_ready'] = False
                     class_data['num_calls'] += 1
                     partner_data['num_calls'] += 1
-                    ClassroomSerializer(instance=classroom, data=class_data).save()
-                    ClassroomSerializer(instance=partner, data=partner_data).save()
+                    serializer_1 = ClassroomSerializer(instance=classroom, data=class_data)
+                    serializer_2 = ClassroomSerializer(instance=partner, data=partner_data)
+                    if serializer_1.is_valid() and serializer_2.is_valid():
+                        serializer_1.save()
+                        serializer_2.save()
+                    else:
+                        return Response({'class': serializer_1.errors, 'partner': serializer_2.errors},
+                                        status=status.HTTP_400_BAD_REQUEST)
             else:
                 seconds = (sessions[0].expires - timezone.now()).total_seconds()
                 expires = int(seconds / 60) + 1
         class_data['expires'] = expires
-        ClassroomSerializer(instance=classroom, data=class_data).save()
+        class_serializer = ClassroomSerializer(instance=classroom, data=class_data)
+        if not class_serializer.is_valid():
+            return Response({'error': class_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        class_serializer.save()
         return Response(class_data, status=status.HTTP_200_OK)
 
 
@@ -126,7 +135,7 @@ class SetReadyView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         serializer = ClassroomSerializer(instance=classroom)
-        class_data = serializer.validated_data
+        class_data = serializer.initial_data
         class_id = class_data['class_id']
         partnership_id = class_data['partnership_id']
         partner = get_class_partner(partnership_id=partnership_id, class_id=class_id)
@@ -185,7 +194,9 @@ class CreateClassroomView(APIView):
         add_to_mailing_list(email, first)
         loops_event(email, "Sign up")
 
-        serializer.validated_data['class_id'] = generate_class_id(6)
+        serializer.data['class_id'] = generate_class_id(6)
+        if not serializer.is_valid():
+            return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
@@ -200,7 +211,7 @@ class MyStudentsView(APIView):
             classroom = Classroom.objects.get(owner=username)
             class_id = classroom.class_id
             queryset = Student.objects.filter(class_id=class_id)
-            students = [StudentSerializer(instance=student).validated_data for student in queryset]
+            students = [StudentSerializer(instance=student).initial_data for student in queryset]
             return Response({'students': students}, status=status.HTTP_200_OK)
         except Classroom.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -222,4 +233,4 @@ class GetPartnerClassView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         elif not partner:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(data=self.serializer_class(instance=partner).data, status=status.HTTP_200_OK)
+        return Response(data=self.serializer_class(instance=partner).initial_data, status=status.HTTP_200_OK)

@@ -32,9 +32,9 @@ class IsLoggedInView(APIView):
         student = get_current_student(request)
         classroom = get_current_classroom(request)
         if student:
-            return Response({'auth': True, 'student': True, 'data': StudentSerializer(student).validated_data},
+            return Response({'auth': True, 'student': True, 'data': StudentSerializer(student).data},
                             status=status.HTTP_200_OK)
         if classroom:
-            return Response({'auth': True, 'student': False, 'data': ClassroomSerializer(classroom).validated_data},
+            return Response({'auth': True, 'student': False, 'data': ClassroomSerializer(classroom).data},
                             status=status.HTTP_200_OK)
         return Response({"auth": False}, status=status.HTTP_200_OK)

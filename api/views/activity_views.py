@@ -27,10 +27,10 @@ class ActivityView(APIView):
         num: int = request.data.get('num')
         try:
             activity = Activity.objects.get(num=num)
-            serializer = self.serializer_class(instance=activity, data=data)
+            serializer = self.serializer_class(instance=activity, data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+                return Response(serializer.validated_data, status=status.HTTP_202_ACCEPTED)
         except Activity.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -39,7 +39,7 @@ class ActivityView(APIView):
         try:
             activity = Activity.objects.get(num=num)
             serializer = self.serializer_class(instance=activity)
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Activity.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
