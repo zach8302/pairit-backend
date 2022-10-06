@@ -1,32 +1,47 @@
 from django.urls import path
-from .views import *
+
+from .views.student_views import *
+from .views.class_views import *
+from .views.question_views import *
+from .views.session_views import *
+from .views.user_views import *
+from .views.activity_views import *
+from .views.stripe_views import *
 
 urlpatterns = [
-    path('students', StudentView.as_view()),
-    path('create-student', CreateStudentView.as_view()),
-    path('create-class', CreateClassroomView.as_view()),
-    path('classes', ClassroomView.as_view()),
-    path('sessions', SessionView.as_view()),
-    path('get-student', GetStudentView.as_view()),
-    path('get-classroom', GetClassroomView.as_view()),
-    path('get-session', GetSessionView.as_view()),
+    # student urls
+    path('list-students', ListStudentView.as_view()),
+    path('student', StudentView.as_view()),
     path('complete-form', CompleteFormView.as_view()),
     path('is-student', IsStudentView.as_view()),
+    path('create-partner', SetStudentPartnerView.as_view()),
+    path('get-partner', GetStudentPartnerView.as_view()),
+    
+    # class urls
+    path('list-classes', ListClassroomView.as_view()),
+    path('create-class', CreateClassroomView.as_view()),
+    path('get-class', GetClassroomView.as_view()),
+    path('my-students', MyStudentsView.as_view()),
+    path('set-ready', SetReadyView.as_view()),
+    path('get-partner-class', GetPartnerClassView.as_view()),
     path('class-exists', ClassroomExistsView.as_view()),
+
+    # question urls
+    path('list-questions', ListQuestionsView.as_view()),
+    path('questions', QuestionsView.as_view()),
+
+    # session urls
+    path('list-sessions', ListSessionView.as_view()),
+    path('session', SessionView.as_view()),
+
+    # user urls
     path('user-exists', UserExistsView.as_view()),
     path('is-logged-in', IsLoggedInView.as_view()),
-    path('my-students', MyStudentsView.as_view()),
-    path('get-partner-classroom', GetPartnerClassView.as_view()),
-    path('create-partnership', SetPartnerView.as_view()),
-    path('get-partner', GetPartnerView.as_view()),
-    path('set-ready', SetReadyView.as_view()),
-    path('reset-sessions', ResetSessionsView.as_view()),
-    path('set-questions', SetQuestionsView.as_view()),
-    path('get-questions', GetQuestionsView.as_view()),
-    path('delete-questions', DeleteQuestionsView.as_view()),
-    path('questions', QuestionsView.as_view()),
-    path('create-activity', CreateActivityView.as_view()),
-    path('get-activity', GetActivityView.as_view()),
+
+    # activity urls
+    path('activity', ActivityView.as_view()),
+
+    # stripe urls
     path('is-subscribed', IsSubscribedView.as_view()),
     path('checkout', CheckoutView.as_view()),
     path('stripe-webhooks', StripeWebhookView.as_view()),
