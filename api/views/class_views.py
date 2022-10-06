@@ -142,9 +142,7 @@ class SetReadyView(APIView):
         class_ready = class_data['is_ready']
         class_ready = not class_ready
 
-        if not class_ready:
-            return Response(data={"ready": class_ready}, status=status.HTTP_400_BAD_REQUEST)
-        elif not partnership_id:
+        if not partnership_id:
             return Response(data={"partnership_id": None}, status=status.HTTP_400_BAD_REQUEST)
         elif not partner:
             return Response(data={"partner": None}, status=status.HTTP_400_BAD_REQUEST)
@@ -159,6 +157,10 @@ class SetReadyView(APIView):
             except Exception as e:
                 return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                                 status=status.HTTP_417_EXPECTATION_FAILED)
+
+        classroom.is_ready = class_ready
+        classroom.save()
+        
         return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                         status=status.HTTP_200_OK)
 
