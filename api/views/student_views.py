@@ -50,11 +50,12 @@ class StudentView(APIView):
             class_id = request.data.get('class_id').upper()
             personality = request.data.get('personality')
             first = request.data.get('first')
+            display_name = request.data.get('display_name')
 
             try:
                 classroom = Classroom.objects.get(class_id=class_id)
                 student = Student(username=username, class_id=class_id, personality=personality, first=first,
-                                  image=random.randrange(21))
+                                  image=random.randrange(21), display_name=display_name)
                 queryset = Student.objects.filter(username=username)
                 if queryset.exists():
                     return Response({'Bad Request': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)

@@ -169,7 +169,6 @@ class ClassroomExistsView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        print(request.data)
         if 'class_id' not in request.data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         class_id = request.data.get('class_id')

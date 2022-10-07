@@ -12,6 +12,7 @@ class Classroom(models.Model):
     is_ready = models.BooleanField(default=False)
     num_calls = models.IntegerField(default=0)
     expires = models.DateTimeField(default=None, null=True)
+    display_name = models.CharField(max_length=100, null=False)
 
 
 class Student(models.Model):
@@ -21,6 +22,7 @@ class Student(models.Model):
     personality = models.IntegerField(unique=False, default=0)
     partnership_id = models.CharField(max_length=10, unique=False, null=True)
     image = models.IntegerField(default=0)
+    display_name = models.CharField(max_length=100, unique=False)
 
 
 class Session(models.Model):
