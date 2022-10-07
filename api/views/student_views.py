@@ -71,10 +71,9 @@ class CompleteFormView(APIView):
         personality = request.data.get('personality')
         student = get_current_student(request=request)
         if student:
-            serializer = self.serializer_class(instance=student)
-            serializer.data['personality'] = personality
-            serializer.save()
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+            student.personality = personality
+            student.save()
+            return Response(status=status.HTTP_200_OK)
         else:
             return Response({'Bad Request': 'Student does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -108,17 +107,15 @@ class SetStudentPartnerView(APIView):
         first_id = request.data.get('first_id')
         second_id = request.data.get('second_id')
         try:
-            first = Classroom.objects.get(class_id=first_id)
-            first_serializer = ClassroomSerializer(instance=first)
-            second = Classroom.objects.get(class_id=second_id)
-            second_serializer = ClassroomSerializer(instance=second)
+            first: Classroom = Classroom.objects.get(class_id=first_id)
+            second: Classroom = Classroom.objects.get(class_id=second_id)
         except Classroom.DoesNotExist:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         partner_id = generate_class_partner_id(6)
-        first_serializer.data['partner_id'] = partner_id
-        second_serializer.data['partner_id'] = partner_id
-        first_serializer.save()
-        second_serializer.save()
+        first.partnership_id = partner_id
+        second.partnership_id = partner_id
+        first.save()
+        second.save()
         generate_partnerships(first_id, second_id)
         return Response(status=status.HTTP_200_OK)
