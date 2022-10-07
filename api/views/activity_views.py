@@ -18,10 +18,8 @@ class ActivityView(APIView):
 
         activity = Activity(description=description, num=num, name=name)
         serializer = self.serializer_class(instance=activity)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def put(self, request: Request) -> Response:
         num: int = request.data.get('num')

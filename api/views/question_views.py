@@ -57,7 +57,6 @@ class QuestionsView(APIView):
         try:
             questions = Questions.objects.get(num=num)
             serializer = self.serializer_class(instance=questions)
-            if serializer.is_valid():
-                return Response(serializer.validated_data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Questions.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)

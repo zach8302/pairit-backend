@@ -73,11 +73,8 @@ class CompleteFormView(APIView):
         if student:
             serializer = self.serializer_class(instance=student)
             serializer.data['personality'] = personality
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.validated_data, status=status.HTTP_200_OK)
-            else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
         else:
             return Response({'Bad Request': 'Student does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -121,10 +118,7 @@ class SetStudentPartnerView(APIView):
         partner_id = generate_class_partner_id(6)
         first_serializer.data['partner_id'] = partner_id
         second_serializer.data['partner_id'] = partner_id
-        if first_serializer.is_valid() and second_serializer.is_valid():
-            first_serializer.save()
-            second_serializer.save()
-            generate_partnerships(first_id, second_id)
-            return Response(status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_417_EXPECTATION_FAILED)
+        first_serializer.save()
+        second_serializer.save()
+        generate_partnerships(first_id, second_id)
+        return Response(status=status.HTTP_200_OK)
