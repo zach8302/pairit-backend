@@ -24,10 +24,6 @@ def get_current_student(request: Request) -> Optional[Student]:
 class IsStudentView(APIView):
     def post(self, request: Request) -> Response:
         student = get_current_student(request)
-        print(f'Student: {student}')
-        print('Printing students')
-        for student in Student.objects.all():
-            print(student.username)
         return Response(data={"student": (bool(student))}, status=status.HTTP_200_OK)
 
 
