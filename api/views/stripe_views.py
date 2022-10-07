@@ -13,7 +13,7 @@ from django.utils import timezone
 class IsSubscribedView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         classroom = get_current_classroom(request)
         if not classroom:
             return Response(status=status.HTTP_400_BAD_REQUEST)
