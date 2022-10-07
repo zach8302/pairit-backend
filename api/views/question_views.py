@@ -25,8 +25,13 @@ class QuestionsView(APIView):
         if "num" in request.data:
             num = request.data.get("num")
 
-        questions = Questions(questions=questions_param, num=num, name=name, url=url)
-        serializer = self.serializer_class(instance=questions)
+        serializer = self.serializer_class(data=
+                                           {
+                                               'questions': questions_param,
+                                               'num': num,
+                                               'name': name,
+                                               'url': url
+                                           })
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.validated_data, status=status.HTTP_201_CREATED)

@@ -16,7 +16,6 @@ class ListSessionView(generics.ListAPIView):
 
 
 class SessionView(APIView):
-    serializer_class = SessionSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request) -> Response:
