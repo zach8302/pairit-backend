@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 class UserExistsView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         student, teacher, teacher_email = None, None, None
         if 'username' in request.data:
             username = request.data.get('username')
