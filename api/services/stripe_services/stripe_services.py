@@ -17,9 +17,9 @@ def create_checkout_session(email):
         customer_email=email,
         mode='subscription',
         allow_promotion_codes=True,
-        subscription_data={
-            "trial_period_days": 30
-        },
+        # subscription_data={
+        #     "trial_period_days": 30
+        # },
         line_items=[{
             'price': 'price_1LQKNXJCFUCx31oeMfr5Wxp4',
             # For metered billing, do not pass quantity
