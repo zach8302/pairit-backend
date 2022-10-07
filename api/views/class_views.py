@@ -78,7 +78,7 @@ class GetClassroomView(APIView):
     serializer_class = ClassroomSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         classroom = get_current_classroom(request)
         if classroom is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -142,9 +142,7 @@ class SetReadyView(APIView):
         class_ready = class_data['is_ready']
         class_ready = not class_ready
 
-        if not class_ready:
-            return Response(data={"ready": class_ready}, status=status.HTTP_400_BAD_REQUEST)
-        elif not partnership_id:
+        if not partnership_id:
             return Response(data={"partnership_id": None}, status=status.HTTP_400_BAD_REQUEST)
         elif not partner:
             return Response(data={"partner": None}, status=status.HTTP_400_BAD_REQUEST)
@@ -159,6 +157,10 @@ class SetReadyView(APIView):
             except Exception as e:
                 return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                                 status=status.HTTP_417_EXPECTATION_FAILED)
+
+        classroom.is_ready = class_ready
+        classroom.save()
+        
         return Response({"ready": class_ready, "active": class_ready and partner.is_ready},
                         status=status.HTTP_200_OK)
 
@@ -166,7 +168,7 @@ class SetReadyView(APIView):
 class ClassroomExistsView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         if 'class_id' not in request.data:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         class_id = request.data.get('class_id')
@@ -217,7 +219,7 @@ class GetPartnerClassView(APIView):
     serializer_class = ClassroomSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         current = get_current_classroom(request)
         if not current:
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -225,8 +227,6 @@ class GetPartnerClassView(APIView):
         class_id = current.class_id
         partnership_id = current.partnership_id
         partner = get_class_partner(partnership_id, class_id)
-        if not partnership_id:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        elif not partner:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        return Response(data=self.serializer_class(instance=partner).data, status=status.HTTP_200_OK)
+        if not partnership_id or not partner:
+            return Response(data={'partner': None}, status=status.HTTP_200_OK)
+        return Response(data={'partner': self.serializer_class(instance=partner).data}, status=status.HTTP_200_OK)

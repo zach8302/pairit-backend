@@ -22,8 +22,12 @@ def get_current_student(request: Request) -> Optional[Student]:
 
 
 class IsStudentView(APIView):
-    def get(self, request: Request) -> Response:
+    def post(self, request: Request) -> Response:
         student = get_current_student(request)
+        print(f'Student: {student}')
+        print('Printing students')
+        for student in Student.objects.all():
+            print(student.username)
         return Response(data={"student": (bool(student))}, status=status.HTTP_200_OK)
 
 
@@ -44,24 +48,21 @@ class StudentView(APIView):
 
     def post(self, request: Request) -> Response:
         serializer = CreateStudentSerializer(data=request.data)
-
         if serializer.is_valid():
             username = request.data.get('username')
             class_id = request.data.get('class_id').upper()
             personality = request.data.get('personality')
             first = request.data.get('first')
-
+            display_name = request.data.get('display_name')
             try:
                 classroom = Classroom.objects.get(class_id=class_id)
                 student = Student(username=username, class_id=class_id, personality=personality, first=first,
-                                  image=random.randrange(21))
+                                  image=random.randrange(21), display_name=display_name)
                 queryset = Student.objects.filter(username=username)
                 if queryset.exists():
                     return Response({'Bad Request': 'User already exists'}, status=status.HTTP_400_BAD_REQUEST)
-                student_serializer = StudentSerializer(instance=student)
-                if not student_serializer.is_valid():
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-                return Response(student_serializer.validated_data, status=status.HTTP_201_CREATED)
+                student.save()
+                return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
             except Classroom.DoesNotExist:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
