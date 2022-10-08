@@ -22,10 +22,13 @@ class UserExistsView(APIView):
         if 'email' in request.data:
             email = request.data.get('email')
             teacher_email = Classroom.objects.filter(email=email)
-        return Response(data={"exists": bool(student or teacher or teacher_email),
-                              "student": student,
-                              "teacher": teacher,
-                              "teacher_email": teacher_email},
+        data = {
+            'exists': bool(student or teacher or teacher_email),
+            'student': student,
+            'teacher': teacher,
+            'teacher_email': teacher_email
+        }
+        return Response(data=data,
                         status=status.HTTP_200_OK)
 
 
