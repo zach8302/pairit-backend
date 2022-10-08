@@ -37,6 +37,7 @@ urlpatterns = [
     # user urls
     path('user-exists', UserExistsView.as_view()),
     path('is-logged-in', IsLoggedInView.as_view()),
+    path('get-email', GetEmailView.as_view()),
 
     # activity urls
     path('activity', ActivityView.as_view()),
