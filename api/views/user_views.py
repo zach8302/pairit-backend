@@ -17,11 +17,17 @@ class UserExistsView(APIView):
         student, teacher, teacher_email = None, None, None
         if 'username' in request.data:
             username = request.data.get('username')
-            student = Student.objects.filter(username=username)
-            teacher = Classroom.objects.filter(owner=username)
+            student_response = Student.objects.filter(username=username)
+            if student_response:
+                student = student_response[0].username
+            teacher_response = Classroom.objects.filter(owner=username)
+            if teacher_response:
+                teacher = teacher_response[0].owner
         if 'email' in request.data:
             email = request.data.get('email')
-            teacher_email = Classroom.objects.filter(email=email)
+            teacher_email_response = Classroom.objects.filter(email=email)
+            if teacher_email_response:
+                teacher_email = teacher_email_response[0].email
         data = {
             'exists': bool(student or teacher or teacher_email),
             'student': student,
@@ -51,8 +57,8 @@ class GetEmailView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request: Request) -> Response:
-        username = request.get('username')
-        is_student = request.get('is_student')
+        username = request.data.get('username')
+        is_student = request.data.get('is_student')
         if is_student:
             try:
                 student = Student.objects.get(username=username)
