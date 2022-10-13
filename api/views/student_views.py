@@ -100,7 +100,8 @@ class GetStudentPartnerView(APIView):
 
 
 class SetStudentPartnerView(APIView):
-    permission_classes = [IsAdminUser]
+    # permission_classes = [IsAdminUser]
+    # make sure to uncomment this in production
 
     def post(self, request: Request) -> Response:
 

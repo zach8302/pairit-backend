@@ -166,11 +166,16 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+# Email Settings
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = str(BASE_DIR.joinpath('sent_emails'))
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ORIGIN_WHITELIST = {
-    ('http://localhost:3000', 'https://sea-lion-app-mwsvr.ondigitalocean.app', 'https://talktodos.com', 'https://app.talktodos.com')
+    ('http://localhost:3000', 'https://sea-lion-app-mwsvr.ondigitalocean.app', 'https://talktodos.com',
+     'https://app.talktodos.com')
 }
