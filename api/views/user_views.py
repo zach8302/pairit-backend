@@ -1,3 +1,12 @@
+from django.core.mail import send_mail, BadHeaderError
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import ensure_csrf_cookie
+
 from .class_views import get_current_classroom
 from .student_views import get_current_student
 from ..serializers import ClassroomSerializer, StudentSerializer
@@ -71,3 +80,36 @@ class GetEmailView(APIView):
             except Classroom.DoesNotExist:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
         return Response(data={'email': classroom.email}, status=status.HTTP_200_OK)
+
+
+class PasswordResetView(APIView):
+    permission_classes = [AllowAny]
+    
+    def post(self, request: Request) -> Response:
+        password_reset_form = PasswordResetForm(request)
+        if password_reset_form.is_valid():
+            data = password_reset_form.cleaned_data['email']
+            associated_users = Classroom.objects.filter(email=data)
+            if associated_users.exists():
+                for user in associated_users:
+                    subject = "Todos Password Reset Request"
+                    email_template_name = "authentication/password/password_reset_email.txt"
+                    c = {
+                        "email": user.email,
+                        # must be changed for production
+                        "domain": "127.0.0.1:8000",
+                        "site_name": "Todos",
+                        "uid": urlsafe_base64_encode(force_bytes(user.owner)),
+                        "user": user,
+                        "token": default_token_generator.make_token(user),
+                        # should change to https before production
+                        "protocol": "http"
+                    }
+                    email = render_to_string(email_template_name, c)
+                    try:
+                        # Need to change the from email for production
+                        send_mail(subject, email, "admin@todos.com", [user.email], fail_silently=False)
+                    except BadHeaderError:
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+                    return redirect("/api/password_reset/done/")
+        return Response(status=status.HTTP_400_BAD_REQUEST)
