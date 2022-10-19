@@ -39,7 +39,7 @@ urlpatterns = [
     path('is-logged-in', IsLoggedInView.as_view()),
     path('get-email', GetEmailView.as_view()),
     path('password_reset/', PasswordResetView.as_view()),
-    path('password_reset/done', auth_views.PasswordResetDoneView.as_view()),
+    path('password_reset/pin', PasswordResetPinView.as_view()),
     path('password_reset/complete', auth_views.PasswordResetCompleteView.as_view()),
     path('password_reset/confirm/<uidb64>/<token>', auth_views.PasswordResetConfirmView.as_view()),
 

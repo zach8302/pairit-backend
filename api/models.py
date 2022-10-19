@@ -13,6 +13,7 @@ class Classroom(models.Model):
     num_calls = models.IntegerField(default=0)
     expires = models.DateTimeField(default=None, null=True)
     display_name = models.CharField(max_length=100, null=False)
+    pin = models.CharField(max_length=6, null=True)
 
 
 class Student(models.Model):
